@@ -87,15 +87,15 @@ jobs:
         with:
           script: |
             const marker = '<!-- bundle-size-report -->';
-            const core = {
+            const corePkg = {
               raw: '${{ steps.measure.outputs.core_raw }}',
               kb: '${{ steps.measure.outputs.core_kb }}',
             };
-            const react = {
+            const reactPkg = {
               raw: '${{ steps.measure.outputs.react_raw }}',
               kb: '${{ steps.measure.outputs.react_kb }}',
             };
-            const ng = {
+            const ngPkg = {
               raw: '${{ steps.measure.outputs.ng_raw }}',
               kb: '${{ steps.measure.outputs.ng_kb }}',
             };
@@ -107,9 +107,9 @@ jobs:
               '',
               '| Package | Raw | Gzipped | Limit |',
               '|---------|-----|---------|-------|',
-              `| \`@markit/core\` | ${core.raw}B | **${core.kb}KB** | 15KB |`,
-              `| \`@markit/react\` | ${react.raw}B | **${react.kb}KB** | 3KB |`,
-              `| \`@markit/angular\` | ${ng.raw}B | **${ng.kb}KB** | 5KB |`,
+              `| \`@markit/core\` | ${corePkg.raw}B | **${corePkg.kb}KB** | 15KB |`,
+              `| \`@markit/react\` | ${reactPkg.raw}B | **${reactPkg.kb}KB** | 3KB |`,
+              `| \`@markit/angular\` | ${ngPkg.raw}B | **${ngPkg.kb}KB** | 5KB |`,
               '',
               status,
             ].join('\n');

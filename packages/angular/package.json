@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "Angular bindings for @markit/core text highlighting engine",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
     "test": "vitest run",
