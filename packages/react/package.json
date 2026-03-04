@@ -56,5 +56,12 @@
     "hook"
   ],
   "license": "MIT",
-  "sideEffects": false
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saurabhiam/markit.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://saurabhiam.github.io/markit/",
+  "bugs": "https://github.com/saurabhiam/markit/issues"
 }
