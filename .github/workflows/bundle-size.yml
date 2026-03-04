@@ -1,0 +1,61 @@
+name: Bundle Size
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.10'
+
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+
+      - name: Measure and report bundle sizes
+        run: |
+          CORE_RAW=$(wc -c < packages/core/dist/index.js | tr -d ' ')
+          CORE_GZ=$(gzip -c packages/core/dist/index.js | wc -c | tr -d ' ')
+          REACT_RAW=$(wc -c < packages/react/dist/index.js | tr -d ' ')
+          REACT_GZ=$(gzip -c packages/react/dist/index.js | wc -c | tr -d ' ')
+
+          CORE_KB=$(echo "scale=1; $CORE_GZ/1024" | bc)
+          REACT_KB=$(echo "scale=1; $REACT_GZ/1024" | bc)
+
+          echo "## 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | Raw | Gzipped |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-----|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markit/core\` | ${CORE_RAW}B | **${CORE_KB}KB** |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markit/react\` | ${REACT_RAW}B | **${REACT_KB}KB** |" >> $GITHUB_STEP_SUMMARY
+
+          FAILED=0
+
+          # @markit/core: fail if gzipped exceeds 15KB
+          if [ "$CORE_GZ" -gt 15360 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ \`@markit/core\` exceeds 15KB gzipped limit (${CORE_KB}KB)" >> $GITHUB_STEP_SUMMARY
+            echo "::error::@markit/core exceeds 15KB gzipped ($CORE_GZ bytes > 15360 limit)"
+            FAILED=1
+          fi
+
+          # @markit/react: fail if gzipped exceeds 3KB
+          if [ "$REACT_GZ" -gt 3072 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ \`@markit/react\` exceeds 3KB gzipped limit (${REACT_KB}KB)" >> $GITHUB_STEP_SUMMARY
+            echo "::error::@markit/react exceeds 3KB gzipped ($REACT_GZ bytes > 3072 limit)"
+            FAILED=1
+          fi
+
+          if [ "$FAILED" -eq 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All packages within size limits" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          exit $FAILED

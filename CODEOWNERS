@@ -1,0 +1,8 @@
+# Default owner for everything
+* @saurabhiam
+
+# Package-specific owners (add collaborators as the team grows)
+packages/core/    @saurabhiam
+packages/react/   @saurabhiam
+packages/angular/ @saurabhiam
+apps/docs/        @saurabhiam
