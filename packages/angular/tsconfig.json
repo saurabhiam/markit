@@ -1,11 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "verbatimModuleSyntax": false
   },
-  "include": ["src", "__tests__"]
+  "include": ["src", "__tests__"],
+  "exclude": ["src/test-setup.ts"]
 }
