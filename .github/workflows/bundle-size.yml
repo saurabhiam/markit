@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   size:
@@ -21,44 +22,124 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
 
-      - name: Measure and report bundle sizes
+      - name: Measure bundle sizes
+        id: measure
         run: |
           CORE_RAW=$(wc -c < packages/core/dist/index.js | tr -d ' ')
           CORE_GZ=$(gzip -c packages/core/dist/index.js | wc -c | tr -d ' ')
           REACT_RAW=$(wc -c < packages/react/dist/index.js | tr -d ' ')
           REACT_GZ=$(gzip -c packages/react/dist/index.js | wc -c | tr -d ' ')
+          NG_RAW=$(wc -c < packages/angular/dist/fesm2022/markit-angular.mjs | tr -d ' ')
+          NG_GZ=$(gzip -c packages/angular/dist/fesm2022/markit-angular.mjs | wc -c | tr -d ' ')
 
           CORE_KB=$(echo "scale=1; $CORE_GZ/1024" | bc)
           REACT_KB=$(echo "scale=1; $REACT_GZ/1024" | bc)
+          NG_KB=$(echo "scale=1; $NG_GZ/1024" | bc)
 
-          echo "## 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Package | Raw | Gzipped |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|-----|---------|" >> $GITHUB_STEP_SUMMARY
-          echo "| \`@markit/core\` | ${CORE_RAW}B | **${CORE_KB}KB** |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`@markit/react\` | ${REACT_RAW}B | **${REACT_KB}KB** |" >> $GITHUB_STEP_SUMMARY
+          echo "core_raw=$CORE_RAW" >> $GITHUB_OUTPUT
+          echo "core_gz=$CORE_GZ" >> $GITHUB_OUTPUT
+          echo "core_kb=$CORE_KB" >> $GITHUB_OUTPUT
+          echo "react_raw=$REACT_RAW" >> $GITHUB_OUTPUT
+          echo "react_gz=$REACT_GZ" >> $GITHUB_OUTPUT
+          echo "react_kb=$REACT_KB" >> $GITHUB_OUTPUT
+          echo "ng_raw=$NG_RAW" >> $GITHUB_OUTPUT
+          echo "ng_gz=$NG_GZ" >> $GITHUB_OUTPUT
+          echo "ng_kb=$NG_KB" >> $GITHUB_OUTPUT
 
           FAILED=0
+          STATUS="✅ All packages within size limits"
 
-          # @markit/core: fail if gzipped exceeds 15KB
           if [ "$CORE_GZ" -gt 15360 ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "❌ \`@markit/core\` exceeds 15KB gzipped limit (${CORE_KB}KB)" >> $GITHUB_STEP_SUMMARY
             echo "::error::@markit/core exceeds 15KB gzipped ($CORE_GZ bytes > 15360 limit)"
+            STATUS="❌ @markit/core exceeds 15KB gzipped limit (${CORE_KB}KB)"
             FAILED=1
           fi
 
-          # @markit/react: fail if gzipped exceeds 3KB
           if [ "$REACT_GZ" -gt 3072 ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "❌ \`@markit/react\` exceeds 3KB gzipped limit (${REACT_KB}KB)" >> $GITHUB_STEP_SUMMARY
             echo "::error::@markit/react exceeds 3KB gzipped ($REACT_GZ bytes > 3072 limit)"
+            STATUS="❌ @markit/react exceeds 3KB gzipped limit (${REACT_KB}KB)"
             FAILED=1
           fi
 
-          if [ "$FAILED" -eq 0 ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "✅ All packages within size limits" >> $GITHUB_STEP_SUMMARY
+          if [ "$NG_GZ" -gt 5120 ]; then
+            echo "::error::@markit/angular exceeds 5KB gzipped ($NG_GZ bytes > 5120 limit)"
+            STATUS="❌ @markit/angular exceeds 5KB gzipped limit (${NG_KB}KB)"
+            FAILED=1
           fi
 
-          exit $FAILED
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+
+          # Step summary
+          echo "## 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | Raw | Gzipped | Limit |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-----|---------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markit/core\` | ${CORE_RAW}B | **${CORE_KB}KB** | 15KB |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markit/react\` | ${REACT_RAW}B | **${REACT_KB}KB** | 3KB |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markit/angular\` | ${NG_RAW}B | **${NG_KB}KB** | 5KB |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "$STATUS" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- bundle-size-report -->';
+            const core = {
+              raw: '${{ steps.measure.outputs.core_raw }}',
+              kb: '${{ steps.measure.outputs.core_kb }}',
+            };
+            const react = {
+              raw: '${{ steps.measure.outputs.react_raw }}',
+              kb: '${{ steps.measure.outputs.react_kb }}',
+            };
+            const ng = {
+              raw: '${{ steps.measure.outputs.ng_raw }}',
+              kb: '${{ steps.measure.outputs.ng_kb }}',
+            };
+            const status = `${{ steps.measure.outputs.status }}`;
+
+            const body = [
+              marker,
+              '## 📦 Bundle Size Report',
+              '',
+              '| Package | Raw | Gzipped | Limit |',
+              '|---------|-----|---------|-------|',
+              `| \`@markit/core\` | ${core.raw}B | **${core.kb}KB** | 15KB |`,
+              `| \`@markit/react\` | ${react.raw}B | **${react.kb}KB** | 3KB |`,
+              `| \`@markit/angular\` | ${ng.raw}B | **${ng.kb}KB** | 5KB |`,
+              '',
+              status,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.body?.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail if over limit
+        if: steps.measure.outputs.failed == '1'
+        run: exit 1
