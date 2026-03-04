@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        node-version: [20, 22]
 
     steps:
       - uses: actions/checkout@v4
@@ -59,7 +59,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - run: bun install --frozen-lockfile
-      - run: bun run build
+
+      - name: Build
+        run: bun run build
 
       - name: Verify CJS import (Node ${{ matrix.node-version }})
         run: node -e "require('./packages/core/dist/index.cjs')"
