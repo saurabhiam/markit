@@ -85,7 +85,5 @@ export function processWildcards(
   const singleChar = mode === 'withSpaces' ? '[\\S\\s]' : '\\S';
   const multiChar = mode === 'withSpaces' ? '[\\S\\s]*?' : '\\S*?';
 
-  return escaped
-    .replace(/\\\?/g, singleChar)
-    .replace(/\\\*/g, multiChar);
+  return escaped.replace(/\\\?/g, singleChar).replace(/\\\*/g, multiChar);
 }

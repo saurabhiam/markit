@@ -8,7 +8,11 @@ afterEach(cleanup);
 
 function TestComponent({ term, options }: { term: string; options?: Record<string, unknown> }) {
   const ref = useHighlight(term, { renderer: 'dom', ...options } as any);
-  return <div ref={ref}><p>hello world hello</p></div>;
+  return (
+    <div ref={ref}>
+      <p>hello world hello</p>
+    </div>
+  );
 }
 
 describe('useHighlight', () => {
@@ -34,7 +38,9 @@ describe('useHighlight', () => {
       return (
         <div>
           <button onClick={() => setTerm('world')}>change</button>
-          <div ref={ref}><p>hello world</p></div>
+          <div ref={ref}>
+            <p>hello world</p>
+          </div>
         </div>
       );
     }
@@ -59,7 +65,11 @@ describe('useHighlight', () => {
   it('handles array of terms', () => {
     function MultiTerm() {
       const ref = useHighlight(['hello', 'world'], { renderer: 'dom' });
-      return <div ref={ref}><p>hello world</p></div>;
+      return (
+        <div ref={ref}>
+          <p>hello world</p>
+        </div>
+      );
     }
 
     const { container } = render(<MultiTerm />);

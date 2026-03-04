@@ -27,7 +27,9 @@ describe('scheduleBatched utility', () => {
 
     scheduleBatched(
       [1, 2, 3, 4, 5],
-      (batch) => { processed.push([...batch]); },
+      (batch) => {
+        processed.push([...batch]);
+      },
       2,
       () => {},
     );
@@ -80,7 +82,14 @@ describe('scheduleBatched utility', () => {
   it('processes single batch when items fit in one batch', async () => {
     const processed: number[][] = [];
 
-    scheduleBatched([1, 2], (batch) => { processed.push([...batch]); }, 10, () => {});
+    scheduleBatched(
+      [1, 2],
+      (batch) => {
+        processed.push([...batch]);
+      },
+      10,
+      () => {},
+    );
 
     await waitForFrames(5);
 

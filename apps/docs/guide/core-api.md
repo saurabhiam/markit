@@ -12,10 +12,10 @@ const instance = markit(document.getElementById('content'));
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `element` | `HTMLElement` | Root element to search within |
-| `plugins` | `MarkitPlugin[]` | Optional array of plugins |
+| Parameter | Type             | Description                   |
+| --------- | ---------------- | ----------------------------- |
+| `element` | `HTMLElement`    | Root element to search within |
+| `plugins` | `MarkitPlugin[]` | Optional array of plugins     |
 
 **Returns:** `MarkitInstance`
 
@@ -78,42 +78,42 @@ instance.destroy();
 
 ## Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `renderer` | `'auto' \| 'highlight-api' \| 'dom' \| 'overlay'` | `'auto'` | Rendering strategy |
-| `element` | `string` | `'mark'` | Wrapper element tag (DOM renderer only) |
-| `className` | `string` | `'markit-match'` | CSS class on wrapper elements |
-| `highlightName` | `string` | `'markit-highlight'` | CSS Highlight API registry name |
-| `caseSensitive` | `boolean` | `false` | Case-sensitive matching |
-| `ignoreDiacritics` | `boolean` | `false` | Strip diacritics before matching |
-| `acrossElements` | `boolean` | `false` | Match across element boundaries |
-| `separateWordSearch` | `boolean` | `false` | Split term into individual words |
-| `accuracy` | `'partially' \| 'exactly' \| 'startsWith' \| 'complementary'` | `'partially'` | Match accuracy mode |
-| `synonyms` | `SynonymMap` | — | Synonym expansion map |
-| `wildcards` | `'disabled' \| 'enabled' \| 'withSpaces'` | `'disabled'` | Wildcard support |
-| `ignoreJoiners` | `boolean` | `false` | Ignore zero-width characters |
-| `ignorePunctuation` | `string[]` | — | Punctuation characters to ignore |
-| `exclude` | `string[]` | — | CSS selectors to exclude from search |
-| `debounce` | `number` | `0` | Debounce delay in ms for live search |
-| `batchSize` | `number` | `0` | Render matches in async batches of this size (0 = synchronous) |
-| `debug` | `boolean` | `false` | Log timing info to console |
+| Option               | Type                                                          | Default              | Description                                                    |
+| -------------------- | ------------------------------------------------------------- | -------------------- | -------------------------------------------------------------- |
+| `renderer`           | `'auto' \| 'highlight-api' \| 'dom' \| 'overlay'`             | `'auto'`             | Rendering strategy                                             |
+| `element`            | `string`                                                      | `'mark'`             | Wrapper element tag (DOM renderer only)                        |
+| `className`          | `string`                                                      | `'markit-match'`     | CSS class on wrapper elements                                  |
+| `highlightName`      | `string`                                                      | `'markit-highlight'` | CSS Highlight API registry name                                |
+| `caseSensitive`      | `boolean`                                                     | `false`              | Case-sensitive matching                                        |
+| `ignoreDiacritics`   | `boolean`                                                     | `false`              | Strip diacritics before matching                               |
+| `acrossElements`     | `boolean`                                                     | `false`              | Match across element boundaries                                |
+| `separateWordSearch` | `boolean`                                                     | `false`              | Split term into individual words                               |
+| `accuracy`           | `'partially' \| 'exactly' \| 'startsWith' \| 'complementary'` | `'partially'`        | Match accuracy mode                                            |
+| `synonyms`           | `SynonymMap`                                                  | —                    | Synonym expansion map                                          |
+| `wildcards`          | `'disabled' \| 'enabled' \| 'withSpaces'`                     | `'disabled'`         | Wildcard support                                               |
+| `ignoreJoiners`      | `boolean`                                                     | `false`              | Ignore zero-width characters                                   |
+| `ignorePunctuation`  | `string[]`                                                    | —                    | Punctuation characters to ignore                               |
+| `exclude`            | `string[]`                                                    | —                    | CSS selectors to exclude from search                           |
+| `debounce`           | `number`                                                      | `0`                  | Debounce delay in ms for live search                           |
+| `batchSize`          | `number`                                                      | `0`                  | Render matches in async batches of this size (0 = synchronous) |
+| `debug`              | `boolean`                                                     | `false`              | Log timing info to console                                     |
 
 ## Callbacks
 
-| Callback | Signature | Description |
-|----------|-----------|-------------|
-| `each` | `(element, info) => void` | Called for each match |
-| `done` | `(totalMatches) => void` | Called when highlighting completes |
-| `noMatch` | `(term) => void` | Called when no matches are found |
-| `filter` | `(textNode, term, matchIndex, totalMatches) => boolean` | Return `false` to skip a match |
+| Callback  | Signature                                               | Description                        |
+| --------- | ------------------------------------------------------- | ---------------------------------- |
+| `each`    | `(element, info) => void`                               | Called for each match              |
+| `done`    | `(totalMatches) => void`                                | Called when highlighting completes |
+| `noMatch` | `(term) => void`                                        | Called when no matches are found   |
+| `filter`  | `(textNode, term, matchIndex, totalMatches) => boolean` | Return `false` to skip a match     |
 
 ## Accuracy Modes
 
-| Mode | Behavior | Example: searching "light" |
-|------|----------|----------------------------|
-| `'partially'` | Substring match | Matches "high**light**er", "**light**ning" |
-| `'exactly'` | Whole word match | Matches "**light**" only, not "lighter" |
-| `'startsWith'` | Word-start match | Matches "**light**", "**light**er", not "highlight" |
+| Mode              | Behavior             | Example: searching "light"                          |
+| ----------------- | -------------------- | --------------------------------------------------- |
+| `'partially'`     | Substring match      | Matches "high**light**er", "**light**ning"          |
+| `'exactly'`       | Whole word match     | Matches "**light**" only, not "lighter"             |
+| `'startsWith'`    | Word-start match     | Matches "**light**", "**light**er", not "highlight" |
 | `'complementary'` | Whitespace-delimited | Matches "**light**" surrounded by spaces/boundaries |
 
 ## Batched Rendering
@@ -138,11 +138,11 @@ instance.mark('the', {
 
 ### Behavior by value
 
-| `batchSize` | Behavior |
-|-------------|----------|
-| `0` (default) | Synchronous — all matches rendered in one frame |
+| `batchSize`                | Behavior                                        |
+| -------------------------- | ----------------------------------------------- |
+| `0` (default)              | Synchronous — all matches rendered in one frame |
 | `> 0`, matches ≤ batchSize | Synchronous — everything fits in a single batch |
-| `> 0`, matches > batchSize | Async — split into ⌈matches/batchSize⌉ batches |
+| `> 0`, matches > batchSize | Async — split into ⌈matches/batchSize⌉ batches  |
 
 ### Cancellation
 
@@ -153,16 +153,19 @@ Calling `mark()`, `unmark()`, or `destroy()` while a batched render is in progre
 `batchSize` works with all framework wrappers — pass it through options like any other option:
 
 **React:**
+
 ```tsx
 const ref = useHighlight(query, { batchSize: 500, renderer: 'dom' });
 ```
 
 **Angular directive:**
+
 ```html
-<div [markitHighlight]="searchTerm" [markitOptions]="{ batchSize: 500 }">
+<div [markitHighlight]="searchTerm" [markitOptions]="{ batchSize: 500 }"></div>
 ```
 
 **Angular service:**
+
 ```typescript
 this.markitService.highlight(instance, term, { batchSize: 500 });
 ```

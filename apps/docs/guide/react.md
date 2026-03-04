@@ -30,7 +30,7 @@ function SearchResults({ query }: { query: string }) {
 
 ```tsx
 const ref = useHighlight(term, {
-  renderer: 'dom',           // or 'highlight-api', 'overlay', 'auto'
+  renderer: 'dom', // or 'highlight-api', 'overlay', 'auto'
   caseSensitive: false,
   accuracy: 'exactly',
   ignoreDiacritics: true,
@@ -64,13 +64,13 @@ function App() {
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `term` | `string \| string[]` | — | Search term(s) |
-| `as` | `string` | `'div'` | Container HTML tag |
-| `className` | `string` | — | Container CSS class |
-| `style` | `CSSProperties` | — | Container inline styles |
-| ...options | `MarkitOptions` | — | All core options are accepted as props |
+| Prop        | Type                 | Default | Description                            |
+| ----------- | -------------------- | ------- | -------------------------------------- |
+| `term`      | `string \| string[]` | —       | Search term(s)                         |
+| `as`        | `string`             | `'div'` | Container HTML tag                     |
+| `className` | `string`             | —       | Container CSS class                    |
+| `style`     | `CSSProperties`      | —       | Container inline styles                |
+| ...options  | `MarkitOptions`      | —       | All core options are accepted as props |
 
 ## Next.js / SSR Safety
 
@@ -112,6 +112,7 @@ Effects only run on committed renders. Interrupted renders never execute effects
 ### Re-render Behavior
 
 When the `term` or `options` change, the effect:
+
 1. Cleans up previous highlights (`destroy()`)
 2. Creates a new instance
 3. Applies new highlights
@@ -127,7 +128,7 @@ const ref = useHighlight(query, {
   renderer: 'dom',
   batchSize: 500,
   done: (count) => {
-    setMatchCount(count);  // Safe: called after all batches complete
+    setMatchCount(count); // Safe: called after all batches complete
   },
 });
 ```
@@ -135,12 +136,7 @@ const ref = useHighlight(query, {
 Or with the `Highlighter` component:
 
 ```tsx
-<Highlighter
-  term={query}
-  renderer="dom"
-  batchSize={500}
-  done={(count) => setMatchCount(count)}
->
+<Highlighter term={query} renderer="dom" batchSize={500} done={(count) => setMatchCount(count)}>
   <article>Long document content...</article>
 </Highlighter>
 ```

@@ -51,13 +51,9 @@ export function useHighlight<T extends HTMLElement = HTMLElement>(
       instanceRef.current = null;
     }
 
-    const normalizedTerm = Array.isArray(term)
-      ? term.filter(Boolean)
-      : term;
+    const normalizedTerm = Array.isArray(term) ? term.filter(Boolean) : term;
 
-    const isEmpty = Array.isArray(normalizedTerm)
-      ? normalizedTerm.length === 0
-      : !normalizedTerm;
+    const isEmpty = Array.isArray(normalizedTerm) ? normalizedTerm.length === 0 : !normalizedTerm;
 
     if (isEmpty) return;
 
@@ -100,10 +96,7 @@ function useStableOptions(
   }, [options]);
 }
 
-function shallowEqual(
-  a: Record<string, unknown>,
-  b: Record<string, unknown>,
-): boolean {
+function shallowEqual(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
   const keysA = Object.keys(a);
   const keysB = Object.keys(b);
   if (keysA.length !== keysB.length) return false;

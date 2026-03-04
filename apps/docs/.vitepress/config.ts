@@ -4,9 +4,7 @@ export default defineConfig({
   title: 'MarkIt',
   description: 'High-performance text highlighting for the modern web',
 
-  head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
-  ],
+  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]],
 
   themeConfig: {
     nav: [
@@ -41,12 +39,11 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/saurabhiam/markit' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/saurabhiam/markit' }],
 
     footer: {
-      message: 'Released under the MIT License. <span class="footer-india"><a href="https://madewithloveinindia.org" target="_blank">Made with <span aria-label="Love" style="color: #f43f5e">&hearts;</span> in India</a></span>',
+      message:
+        'Released under the MIT License. <span class="footer-india"><a href="https://madewithloveinindia.org" target="_blank">Made with <span aria-label="Love" style="color: #f43f5e">&hearts;</span> in India</a></span>',
     },
   },
 });

@@ -99,12 +99,7 @@ export interface MarkitOptions {
   noMatch?: (term: string) => void;
 
   /** Filter callback — return false to skip a match. */
-  filter?: (
-    textNode: Text,
-    term: string,
-    matchIndex: number,
-    totalMatches: number,
-  ) => boolean;
+  filter?: (textNode: Text, term: string, matchIndex: number, totalMatches: number) => boolean;
 
   /** Debug mode — logs timing and match info to console. */
   debug?: boolean;

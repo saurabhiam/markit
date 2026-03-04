@@ -39,11 +39,11 @@ export class SearchResultsComponent {
 
 ### Directive Inputs
 
-| Input | Type | Description |
-|-------|------|-------------|
-| `markitHighlight` | `string \| string[]` | Search term(s) |
-| `markitOptions` | `Partial<MarkitOptions>` | Configuration options |
-| `markitPlugins` | `MarkitPlugin[]` | Plugins to register |
+| Input             | Type                     | Description           |
+| ----------------- | ------------------------ | --------------------- |
+| `markitHighlight` | `string \| string[]`     | Search term(s)        |
+| `markitOptions`   | `Partial<MarkitOptions>` | Configuration options |
+| `markitPlugins`   | `MarkitPlugin[]`         | Plugins to register   |
 
 ### Callbacks via Options
 
@@ -51,7 +51,7 @@ export class SearchResultsComponent {
 highlightOptions = {
   renderer: 'dom' as const,
   done: (count: number) => {
-    this.matchCount = count;  // Safe: re-enters NgZone automatically
+    this.matchCount = count; // Safe: re-enters NgZone automatically
   },
   noMatch: (term: string) => {
     this.showNoResults = true;
@@ -140,7 +140,7 @@ highlightOptions = {
   renderer: 'dom' as const,
   batchSize: 500,
   done: (count: number) => {
-    this.matchCount = count;  // Safe: re-enters NgZone
+    this.matchCount = count; // Safe: re-enters NgZone
   },
 };
 ```
@@ -157,7 +157,9 @@ With the service:
 this.markitService.highlight(this.highlighter, term, {
   renderer: 'dom',
   batchSize: 500,
-  done: (count) => { this.matchCount = count; },
+  done: (count) => {
+    this.matchCount = count;
+  },
 });
 ```
 

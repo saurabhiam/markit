@@ -1,58 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MarkIt Benchmark</title>
-  <style>
-    ::highlight(markit-highlight) {
-      background-color: #ffff00;
-      color: #000;
-    }
-    mark.markit-match {
-      background-color: #ffff00;
-      color: #000;
-    }
-    body { font-family: system-ui, sans-serif; margin: 20px; }
-    #status { font-weight: bold; margin-bottom: 10px; }
-  </style>
-</head>
-<body>
-  <div id="status">Generating DOM...</div>
-  <div id="content"></div>
-
-  <script type="module">
-    const params = new URLSearchParams(location.search);
-    const nodeCount = parseInt(params.get('nodes') || '1000', 10);
-
-    const words = [
-      'Lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur',
-      'adipiscing', 'elit', 'sed', 'do', 'eiusmod', 'tempor',
-      'incididunt', 'ut', 'labore', 'et', 'dolore', 'magna', 'aliqua',
-      'highlight', 'search', 'performance', 'benchmark', 'testing',
-      'JavaScript', 'TypeScript', 'Angular', 'React', 'framework',
-    ];
-
-    const container = document.getElementById('content');
-    const fragment = document.createDocumentFragment();
-
-    for (let i = 0; i < nodeCount; i++) {
-      const p = document.createElement('p');
-      const len = 8 + (i % 12);
-      const parts = [];
-      for (let j = 0; j < len; j++) {
-        parts.push(words[(i * len + j) % words.length]);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MarkIt Benchmark</title>
+    <style>
+      ::highlight(markit-highlight) {
+        background-color: #ffff00;
+        color: #000;
       }
-      p.textContent = parts.join(' ');
-      fragment.appendChild(p);
-    }
+      mark.markit-match {
+        background-color: #ffff00;
+        color: #000;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 20px;
+      }
+      #status {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="status">Generating DOM...</div>
+    <div id="content"></div>
 
-    container.appendChild(fragment);
-    document.getElementById('status').textContent =
-      `Ready: ${nodeCount} nodes generated`;
+    <script type="module">
+      const params = new URLSearchParams(location.search);
+      const nodeCount = parseInt(params.get('nodes') || '1000', 10);
 
-    window.__benchReady = true;
-    window.__nodeCount = nodeCount;
-  </script>
-</body>
+      const words = [
+        'Lorem',
+        'ipsum',
+        'dolor',
+        'sit',
+        'amet',
+        'consectetur',
+        'adipiscing',
+        'elit',
+        'sed',
+        'do',
+        'eiusmod',
+        'tempor',
+        'incididunt',
+        'ut',
+        'labore',
+        'et',
+        'dolore',
+        'magna',
+        'aliqua',
+        'highlight',
+        'search',
+        'performance',
+        'benchmark',
+        'testing',
+        'JavaScript',
+        'TypeScript',
+        'Angular',
+        'React',
+        'framework',
+      ];
+
+      const container = document.getElementById('content');
+      const fragment = document.createDocumentFragment();
+
+      for (let i = 0; i < nodeCount; i++) {
+        const p = document.createElement('p');
+        const len = 8 + (i % 12);
+        const parts = [];
+        for (let j = 0; j < len; j++) {
+          parts.push(words[(i * len + j) % words.length]);
+        }
+        p.textContent = parts.join(' ');
+        fragment.appendChild(p);
+      }
+
+      container.appendChild(fragment);
+      document.getElementById('status').textContent = `Ready: ${nodeCount} nodes generated`;
+
+      window.__benchReady = true;
+      window.__nodeCount = nodeCount;
+    </script>
+  </body>
 </html>

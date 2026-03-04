@@ -17,6 +17,7 @@ import PlaygroundDemo from '../components/PlaygroundDemo.vue'
 5. **Match count and timing** are displayed in real-time
 
 Try these searches:
+
 - `Lorem` — multiple matches across paragraphs
 - `cafe` with **Ignore Diacritics** enabled — matches "café"
 - `the` with **Exact** accuracy — only matches the word "the", not "the" inside "other"

@@ -50,9 +50,5 @@ export function Highlighter({
 }: HighlighterProps) {
   const ref = useHighlight(term, options);
 
-  return React.createElement(
-    Tag as string,
-    { ref, className, style },
-    children,
-  );
+  return React.createElement(Tag as string, { ref, className, style }, children);
 }

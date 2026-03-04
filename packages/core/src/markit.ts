@@ -43,10 +43,7 @@ const DEFAULT_OPTIONS: MarkitOptions = {
  * and rendering. It is safe to call mark() multiple times — each
  * call clears previous highlights before applying new ones.
  */
-export function markit(
-  root: HTMLElement,
-  plugins?: MarkitPlugin[],
-): MarkitInstance {
+export function markit(root: HTMLElement, plugins?: MarkitPlugin[]): MarkitInstance {
   if (isServer) {
     return createNoopInstance();
   }
@@ -86,7 +83,8 @@ class MarkitCore implements MarkitInstance {
     if (opts.debounce && opts.debounce > 0) {
       if (!this.debouncedMark) {
         this.debouncedMark = debounce(
-          (...args: unknown[]) => this.executeMarkKeyword(args[0] as string | string[], args[1] as MarkitOptions),
+          (...args: unknown[]) =>
+            this.executeMarkKeyword(args[0] as string | string[], args[1] as MarkitOptions),
           opts.debounce,
         );
       }
@@ -237,16 +235,16 @@ class MarkitCore implements MarkitInstance {
     // then yield between batches via requestIdleCallback / rAF.
     if (opts.debug) console.time('[markit] render (batched)');
 
-    const sorted = [...resolved].sort(
-      (a, b) => b.match.start - a.match.start,
-    );
+    const sorted = [...resolved].sort((a, b) => b.match.start - a.match.start);
 
     // Clear happened in the caller. Now render incrementally.
     renderer.clear();
 
     this.cancelBatch = scheduleBatched(
       sorted,
-      (batch) => { renderer.renderBatch(batch, opts); },
+      (batch) => {
+        renderer.renderBatch(batch, opts);
+      },
       batchSize,
       () => {
         this.cancelBatch = null;

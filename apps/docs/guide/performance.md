@@ -18,11 +18,11 @@ Matches are found against the virtual string in a single pass, then mapped back 
 
 ### Rendering
 
-| Renderer | DOM Mutations | Reflows | Use Case |
-|----------|--------------|---------|----------|
-| CSS Highlight API | 0 | 0 | Default — fastest, no layout impact |
-| DOM Wrapping | Per match | Batched | When you need click handlers or custom elements |
-| Overlay | Container only | On scroll/resize | Maximum framework isolation |
+| Renderer          | DOM Mutations  | Reflows          | Use Case                                        |
+| ----------------- | -------------- | ---------------- | ----------------------------------------------- |
+| CSS Highlight API | 0              | 0                | Default — fastest, no layout impact             |
+| DOM Wrapping      | Per match      | Batched          | When you need click handlers or custom elements |
+| Overlay           | Container only | On scroll/resize | Maximum framework isolation                     |
 
 ## Optimization Strategies
 
@@ -67,12 +67,12 @@ instance.mark('the', {
 
 With `batchSize: 500` and 2,000 matches:
 
-| Frame | Action |
-|-------|--------|
-| 1 | Render matches 0–499, yield |
-| 2 | Render matches 500–999, yield |
-| 3 | Render matches 1000–1499, yield |
-| 4 | Render matches 1500–1999, fire `done` callback |
+| Frame | Action                                         |
+| ----- | ---------------------------------------------- |
+| 1     | Render matches 0–499, yield                    |
+| 2     | Render matches 500–999, yield                  |
+| 3     | Render matches 1000–1499, yield                |
+| 4     | Render matches 1500–1999, fire `done` callback |
 
 The search phase (finding matches) is always synchronous — `getMatches()` returns results immediately. Only the rendering phase is batched.
 
@@ -100,16 +100,16 @@ npx playwright test
 
 ### Typical Results (M1 MacBook, Chrome)
 
-| Scenario | 1K nodes | 10K nodes | 50K nodes |
-|----------|----------|-----------|-----------|
-| Single keyword | < 5ms | < 30ms | < 150ms |
-| 5 keywords | < 10ms | < 60ms | < 300ms |
-| Regex | < 10ms | < 50ms | < 250ms |
-| Unmark | < 2ms | < 15ms | < 80ms |
+| Scenario       | 1K nodes | 10K nodes | 50K nodes |
+| -------------- | -------- | --------- | --------- |
+| Single keyword | < 5ms    | < 30ms    | < 150ms   |
+| 5 keywords     | < 10ms   | < 60ms    | < 300ms   |
+| Regex          | < 10ms   | < 50ms    | < 250ms   |
+| Unmark         | < 2ms    | < 15ms    | < 80ms    |
 
-*These are synchronous render numbers. With `batchSize: 500`, total wall time is similar but the UI stays responsive throughout.*
+_These are synchronous render numbers. With `batchSize: 500`, total wall time is similar but the UI stays responsive throughout._
 
-*All numbers are real-browser (Playwright + Chromium), not jsdom. jsdom is 50-100x slower.*
+_All numbers are real-browser (Playwright + Chromium), not jsdom. jsdom is 50-100x slower._
 
 ## How Chrome Find-in-Page Works
 

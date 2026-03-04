@@ -70,10 +70,14 @@ jumps over the lazy dog. Pack my box with five dozen liquor jugs.
 
 const rendererLabel = computed(() => {
   switch (activeRenderer.value) {
-    case 'highlight-api': return '✦ CSS Highlight API (zero DOM mutations)';
-    case 'dom': return '⚙ DOM Wrapping (text node splitting)';
-    case 'overlay': return '◻ Overlay (positioned divs)';
-    default: return '';
+    case 'highlight-api':
+      return '✦ CSS Highlight API (zero DOM mutations)';
+    case 'dom':
+      return '⚙ DOM Wrapping (text node splitting)';
+    case 'overlay':
+      return '◻ Overlay (positioned divs)';
+    default:
+      return '';
   }
 });
 
@@ -99,7 +103,10 @@ function parseIgnorePunctuation(): string[] {
 function parseExclude(): string[] {
   const raw = excludeSelectors.value.trim();
   if (!raw) return [];
-  return raw.split(',').map(s => s.trim()).filter(Boolean);
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 async function loadMarkit() {
@@ -190,16 +197,35 @@ function debouncedHighlight() {
 
 watch(
   [
-    searchTerm, searchMode, regexFlags, renderer, caseSensitive,
-    ignoreDiacritics, accuracy, separateWordSearch, acrossElements,
-    wildcards, ignoreJoiners, ignorePunctuation, excludeSelectors,
-    synonymsJson, element, className, highlightName, debounceMs,
-    batchSize, debugMode,
+    searchTerm,
+    searchMode,
+    regexFlags,
+    renderer,
+    caseSensitive,
+    ignoreDiacritics,
+    accuracy,
+    separateWordSearch,
+    acrossElements,
+    wildcards,
+    ignoreJoiners,
+    ignorePunctuation,
+    excludeSelectors,
+    synonymsJson,
+    element,
+    className,
+    highlightName,
+    debounceMs,
+    batchSize,
+    debugMode,
   ],
-  () => { debouncedHighlight(); },
+  () => {
+    debouncedHighlight();
+  },
 );
 
-onMounted(() => { loadMarkit(); });
+onMounted(() => {
+  loadMarkit();
+});
 
 onUnmounted(() => {
   if (markitInstance) markitInstance.destroy();
@@ -213,14 +239,12 @@ onUnmounted(() => {
     <div class="controls">
       <div class="search-row">
         <div class="mode-toggle">
-          <button
-            :class="{ active: searchMode === 'keyword' }"
-            @click="searchMode = 'keyword'"
-          >Keyword</button>
-          <button
-            :class="{ active: searchMode === 'regex' }"
-            @click="searchMode = 'regex'"
-          >Regex</button>
+          <button :class="{ active: searchMode === 'keyword' }" @click="searchMode = 'keyword'">
+            Keyword
+          </button>
+          <button :class="{ active: searchMode === 'regex' }" @click="searchMode = 'regex'">
+            Regex
+          </button>
         </div>
         <input
           v-model="searchTerm"
@@ -631,7 +655,7 @@ onUnmounted(() => {
   border-color: var(--vp-c-brand-1);
 }
 
-.field input[type="number"] {
+.field input[type='number'] {
   width: 90px;
 }
 

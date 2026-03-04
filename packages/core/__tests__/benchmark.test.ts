@@ -15,10 +15,30 @@ import { markit } from '../src/markit.js';
 function createDOM(nodeCount: number): HTMLElement {
   const container = document.createElement('div');
   const words = [
-    'Lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur',
-    'adipiscing', 'elit', 'sed', 'do', 'eiusmod', 'tempor',
-    'incididunt', 'ut', 'labore', 'et', 'dolore', 'magna', 'aliqua',
-    'highlight', 'search', 'performance', 'benchmark', 'testing',
+    'Lorem',
+    'ipsum',
+    'dolor',
+    'sit',
+    'amet',
+    'consectetur',
+    'adipiscing',
+    'elit',
+    'sed',
+    'do',
+    'eiusmod',
+    'tempor',
+    'incididunt',
+    'ut',
+    'labore',
+    'et',
+    'dolore',
+    'magna',
+    'aliqua',
+    'highlight',
+    'search',
+    'performance',
+    'benchmark',
+    'testing',
   ];
 
   for (let i = 0; i < nodeCount; i++) {

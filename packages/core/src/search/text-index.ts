@@ -8,10 +8,7 @@ import type { TextChunk, ResolvedMatch, ResolvedSegment, MatchResult } from '../
  * concatenated string, enabling single-pass regex/string search
  * with O(log n) offset-to-node resolution via binary search.
  */
-export function createTextIndex(
-  root: Node,
-  exclude?: string[],
-): TextIndex {
+export function createTextIndex(root: Node, exclude?: string[]): TextIndex {
   return new TextIndex(root, exclude);
 }
 
@@ -32,25 +29,21 @@ export class TextIndex {
     this.virtualText = '';
     let offset = 0;
 
-    const walker = document.createTreeWalker(
-      this.root,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode: (node: Text) => {
-          if (!node.textContent || node.textContent.length === 0) {
-            return NodeFilter.FILTER_REJECT;
-          }
-          const parent = node.parentElement;
-          if (!parent) return NodeFilter.FILTER_REJECT;
+    const walker = document.createTreeWalker(this.root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (node: Text) => {
+        if (!node.textContent || node.textContent.length === 0) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        const parent = node.parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
 
-          if (this.isExcluded(parent)) {
-            return NodeFilter.FILTER_REJECT;
-          }
+        if (this.isExcluded(parent)) {
+          return NodeFilter.FILTER_REJECT;
+        }
 
-          return NodeFilter.FILTER_ACCEPT;
-        },
+        return NodeFilter.FILTER_ACCEPT;
       },
-    );
+    });
 
     const textParts: string[] = [];
     let current: Text | null;

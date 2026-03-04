@@ -26,9 +26,7 @@ export class DomRenderer implements RendererInterface {
     this.clear();
 
     // Sort in reverse document order to avoid offset invalidation.
-    const sorted = [...matches].sort(
-      (a, b) => b.match.start - a.match.start,
-    );
+    const sorted = [...matches].sort((a, b) => b.match.start - a.match.start);
 
     this.renderBatch(sorted, options);
   }
@@ -48,23 +46,12 @@ export class DomRenderer implements RendererInterface {
         const { node, startOffset, endOffset } = segment;
 
         if (filter) {
-          const keep = filter(
-            node,
-            resolved.match.term,
-            matchIndex,
-            matches.length,
-          );
+          const keep = filter(node, resolved.match.term, matchIndex, matches.length);
           if (!keep) continue;
         }
 
         try {
-          const wrapper = this.wrapTextRange(
-            node,
-            startOffset,
-            endOffset,
-            tag,
-            className,
-          );
+          const wrapper = this.wrapTextRange(node, startOffset, endOffset, tag, className);
           if (wrapper) {
             this.wrapperElements.push(wrapper);
           }

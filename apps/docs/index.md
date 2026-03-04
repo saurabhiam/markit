@@ -2,8 +2,8 @@
 layout: home
 
 hero:
-  name: "MarkIt"
-  text: "High-Performance Text Highlighting"
+  name: 'MarkIt'
+  text: 'High-Performance Text Highlighting'
   tagline: As fast as Chrome's Find in Page. Zero DOM mutations by default. Framework-safe.
   actions:
     - theme: brand

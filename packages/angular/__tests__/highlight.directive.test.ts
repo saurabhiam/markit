@@ -54,7 +54,12 @@ describe('MarkitHighlightDirective', () => {
   it('applies highlights when searchTerm is set', () => {
     directive.searchTerm = 'hello';
     directive.ngOnChanges({
-      searchTerm: { currentValue: 'hello', previousValue: '', firstChange: true, isFirstChange: () => true },
+      searchTerm: {
+        currentValue: 'hello',
+        previousValue: '',
+        firstChange: true,
+        isFirstChange: () => true,
+      },
     } as any);
 
     const marks = container.querySelectorAll('mark');
@@ -158,7 +163,9 @@ describe('MarkitHighlightDirective', () => {
     const button = document.createElement('button');
     button.textContent = 'Click hello here';
     let clicked = false;
-    button.addEventListener('click', () => { clicked = true; });
+    button.addEventListener('click', () => {
+      clicked = true;
+    });
     container.appendChild(button);
 
     directive.searchTerm = 'hello';

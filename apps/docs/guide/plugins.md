@@ -88,5 +88,5 @@ const ref = useHighlight(term, { plugins: [plugin1, plugin2] });
 ### Angular
 
 ```html
-<div [markitHighlight]="term" [markitPlugins]="[plugin1, plugin2]">
+<div [markitHighlight]="term" [markitPlugins]="[plugin1, plugin2]"></div>
 ```

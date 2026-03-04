@@ -13,10 +13,10 @@ High-performance text highlighting for the modern web. A production-grade altern
 
 ## Packages
 
-| Package | Description | Version |
-|---------|-------------|---------|
-| [`@markit/core`](packages/core) | Framework-agnostic highlighting engine | `0.0.1` |
-| [`@markit/react`](packages/react) | React hook (`useHighlight`) and `<Highlighter>` component | `0.0.1` |
+| Package                               | Description                                               | Version |
+| ------------------------------------- | --------------------------------------------------------- | ------- |
+| [`@markit/core`](packages/core)       | Framework-agnostic highlighting engine                    | `0.0.1` |
+| [`@markit/react`](packages/react)     | React hook (`useHighlight`) and `<Highlighter>` component | `0.0.1` |
 | [`@markit/angular`](packages/angular) | Angular directive (`markitHighlight`) and `MarkitService` | `0.0.1` |
 
 ## Quick Start
@@ -48,7 +48,11 @@ import { useHighlight } from '@markit/react';
 
 function SearchResults({ query }: { query: string }) {
   const ref = useHighlight(query, { caseSensitive: false });
-  return <div ref={ref}><p>Content to search...</p></div>;
+  return (
+    <div ref={ref}>
+      <p>Content to search...</p>
+    </div>
+  );
 }
 ```
 
@@ -81,29 +85,29 @@ Runs outside NgZone. Compatible with OnPush, Signals, and zoneless apps.
 
 ## Rendering Engines
 
-| Engine | DOM Mutations | Reflows | Best For |
-|--------|-------------|---------|----------|
-| **CSS Highlight API** (`highlight-api`) | 0 | 0 | Default. Fastest. Framework-safe. |
-| **DOM Wrapping** (`dom`) | Per match | Batched | When you need click handlers on highlights |
-| **Overlay** (`overlay`) | Container only | On scroll/resize | Maximum framework isolation |
-| **Auto** (`auto`) | — | — | Feature-detects Highlight API, falls back to DOM |
+| Engine                                  | DOM Mutations  | Reflows          | Best For                                         |
+| --------------------------------------- | -------------- | ---------------- | ------------------------------------------------ |
+| **CSS Highlight API** (`highlight-api`) | 0              | 0                | Default. Fastest. Framework-safe.                |
+| **DOM Wrapping** (`dom`)                | Per match      | Batched          | When you need click handlers on highlights       |
+| **Overlay** (`overlay`)                 | Container only | On scroll/resize | Maximum framework isolation                      |
+| **Auto** (`auto`)                       | —              | —                | Feature-detects Highlight API, falls back to DOM |
 
 ## Key Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `renderer` | `'auto' \| 'highlight-api' \| 'dom' \| 'overlay'` | `'auto'` | Rendering strategy |
-| `caseSensitive` | `boolean` | `false` | Case-sensitive matching |
-| `ignoreDiacritics` | `boolean` | `false` | Strip diacritics (café → cafe) |
-| `accuracy` | `'partially' \| 'exactly' \| 'startsWith' \| 'complementary'` | `'partially'` | Match accuracy mode |
-| `separateWordSearch` | `boolean` | `false` | Split term into individual words |
-| `acrossElements` | `boolean` | `false` | Match across element boundaries |
-| `synonyms` | `SynonymMap` | — | Synonym expansion (`{ "JS": ["JavaScript"] }`) |
-| `wildcards` | `'disabled' \| 'enabled' \| 'withSpaces'` | `'disabled'` | Wildcard `?` and `*` support |
-| `exclude` | `string[]` | — | CSS selectors to skip |
-| `batchSize` | `number` | `0` | Async batch rendering (0 = synchronous) |
-| `debounce` | `number` | `0` | Debounce delay in ms for live search |
-| `debug` | `boolean` | `false` | Log timing to console |
+| Option               | Type                                                          | Default       | Description                                    |
+| -------------------- | ------------------------------------------------------------- | ------------- | ---------------------------------------------- |
+| `renderer`           | `'auto' \| 'highlight-api' \| 'dom' \| 'overlay'`             | `'auto'`      | Rendering strategy                             |
+| `caseSensitive`      | `boolean`                                                     | `false`       | Case-sensitive matching                        |
+| `ignoreDiacritics`   | `boolean`                                                     | `false`       | Strip diacritics (café → cafe)                 |
+| `accuracy`           | `'partially' \| 'exactly' \| 'startsWith' \| 'complementary'` | `'partially'` | Match accuracy mode                            |
+| `separateWordSearch` | `boolean`                                                     | `false`       | Split term into individual words               |
+| `acrossElements`     | `boolean`                                                     | `false`       | Match across element boundaries                |
+| `synonyms`           | `SynonymMap`                                                  | —             | Synonym expansion (`{ "JS": ["JavaScript"] }`) |
+| `wildcards`          | `'disabled' \| 'enabled' \| 'withSpaces'`                     | `'disabled'`  | Wildcard `?` and `*` support                   |
+| `exclude`            | `string[]`                                                    | —             | CSS selectors to skip                          |
+| `batchSize`          | `number`                                                      | `0`           | Async batch rendering (0 = synchronous)        |
+| `debounce`           | `number`                                                      | `0`           | Debounce delay in ms for live search           |
+| `debug`              | `boolean`                                                     | `false`       | Log timing to console                          |
 
 See the [full API reference](apps/docs/guide/core-api.md) for all options and callbacks.
 
@@ -139,16 +143,16 @@ bun install
 
 ### Commands
 
-| Command | Description |
-|---------|-------------|
-| `bun run build` | Build all packages |
-| `bun run test` | Run all unit/integration tests (Vitest) |
-| `bun run typecheck` | TypeScript type checking |
-| `bun run dev` | Dev mode with watch |
-| `bun run docs:dev` | Start documentation dev server |
-| `bun run docs:build` | Build documentation site |
-| `bun run bench` | Run Playwright E2E performance benchmarks |
-| `bun run clean` | Clean all build artifacts |
+| Command              | Description                               |
+| -------------------- | ----------------------------------------- |
+| `bun run build`      | Build all packages                        |
+| `bun run test`       | Run all unit/integration tests (Vitest)   |
+| `bun run typecheck`  | TypeScript type checking                  |
+| `bun run dev`        | Dev mode with watch                       |
+| `bun run docs:dev`   | Start documentation dev server            |
+| `bun run docs:build` | Build documentation site                  |
+| `bun run bench`      | Run Playwright E2E performance benchmarks |
+| `bun run clean`      | Clean all build artifacts                 |
 
 ### Testing
 
@@ -179,12 +183,12 @@ Plugin hooks (`beforeSearch`, `afterMatch`, `beforeRender`, `afterRender`) allow
 
 Typical real-browser results (M1 MacBook, Chrome):
 
-| Scenario | 1K nodes | 10K nodes | 50K nodes |
-|----------|----------|-----------|-----------|
-| Single keyword | < 5ms | < 30ms | < 150ms |
-| 5 keywords | < 10ms | < 60ms | < 300ms |
-| Regex | < 10ms | < 50ms | < 250ms |
-| Unmark | < 2ms | < 15ms | < 80ms |
+| Scenario       | 1K nodes | 10K nodes | 50K nodes |
+| -------------- | -------- | --------- | --------- |
+| Single keyword | < 5ms    | < 30ms    | < 150ms   |
+| 5 keywords     | < 10ms   | < 60ms    | < 300ms   |
+| Regex          | < 10ms   | < 50ms    | < 250ms   |
+| Unmark         | < 2ms    | < 15ms    | < 80ms    |
 
 ## License
 

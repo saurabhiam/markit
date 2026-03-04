@@ -5,11 +5,7 @@ import type { RendererInterface, ResolvedMatch, MarkitOptions } from '../types.j
  * Available in Chrome 105+, Firefox 140+, Safari 17.2+.
  */
 export function isHighlightApiSupported(): boolean {
-  return (
-    typeof globalThis !== 'undefined' &&
-    typeof CSS !== 'undefined' &&
-    'highlights' in CSS
-  );
+  return typeof globalThis !== 'undefined' && typeof CSS !== 'undefined' && 'highlights' in CSS;
 }
 
 /**

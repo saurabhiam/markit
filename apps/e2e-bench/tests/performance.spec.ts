@@ -18,10 +18,7 @@ async function waitForReady(page: Page) {
 }
 
 async function injectMarkit(page: Page) {
-  const coreDistPath = path.resolve(
-    __dirname,
-    '../../../packages/core/dist/index.js',
-  );
+  const coreDistPath = path.resolve(__dirname, '../../../packages/core/dist/index.js');
   const coreCode = fs.readFileSync(coreDistPath, 'utf-8');
 
   await page.evaluate((code) => {
@@ -221,36 +218,39 @@ test.describe('Performance Benchmarks', () => {
         await waitForReady(page);
         await injectMarkit(page);
 
-        const result = await page.evaluate(async ({ nodes }) => {
-          const markit = (window as any).__markit;
-          const container = document.getElementById('content')!;
-          const instance = markit(container);
+        const result = await page.evaluate(
+          async ({ nodes }) => {
+            const markit = (window as any).__markit;
+            const container = document.getElementById('content')!;
+            const instance = markit(container);
 
-          performance.mark('batch-start');
+            performance.mark('batch-start');
 
-          const finished = new Promise<number>((resolve) => {
-            instance.mark('Lorem', {
-              renderer: 'dom',
-              batchSize: 500,
-              done: (count: number) => resolve(count),
+            const finished = new Promise<number>((resolve) => {
+              instance.mark('Lorem', {
+                renderer: 'dom',
+                batchSize: 500,
+                done: (count: number) => resolve(count),
+              });
             });
-          });
 
-          const matchCount = await finished;
+            const matchCount = await finished;
 
-          performance.mark('batch-end');
-          const measure = performance.measure('batch', 'batch-start', 'batch-end');
-          performance.clearMarks();
-          performance.clearMeasures();
+            performance.mark('batch-end');
+            const measure = performance.measure('batch', 'batch-start', 'batch-end');
+            performance.clearMarks();
+            performance.clearMeasures();
 
-          instance.destroy();
+            instance.destroy();
 
-          return {
-            timeMs: measure.duration,
-            matchCount,
-            markElements: container.querySelectorAll('mark').length,
-          };
-        }, { nodes: nodeCount });
+            return {
+              timeMs: measure.duration,
+              matchCount,
+              markElements: container.querySelectorAll('mark').length,
+            };
+          },
+          { nodes: nodeCount },
+        );
 
         console.log(
           `  batched-500 (${nodeCount} nodes): ${Math.round(result.timeMs * 100) / 100}ms, ${result.matchCount} matches, ${result.markElements} DOM marks`,
@@ -305,9 +305,7 @@ test.describe('Performance Benchmarks', () => {
         return { syncTime, syncMatches, batchTime, batchMatches };
       });
 
-      console.log(
-        `  sync: ${Math.round(result.syncTime)}ms (${result.syncMatches} matches)`,
-      );
+      console.log(`  sync: ${Math.round(result.syncTime)}ms (${result.syncMatches} matches)`);
       console.log(
         `  batched-200: ${Math.round(result.batchTime)}ms (${result.batchMatches} matches)`,
       );

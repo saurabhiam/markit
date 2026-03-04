@@ -93,10 +93,7 @@ describe('DomRenderer', () => {
   });
 
   it('does not use innerHTML', () => {
-    const originalInnerHTML = Object.getOwnPropertyDescriptor(
-      Element.prototype,
-      'innerHTML',
-    );
+    const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
 
     let innerHTMLSet = false;
     Object.defineProperty(container, 'innerHTML', {
@@ -131,7 +128,9 @@ describe('DomRenderer', () => {
     const button = document.createElement('button');
     button.textContent = 'Click hello here';
     let clicked = false;
-    button.addEventListener('click', () => { clicked = true; });
+    button.addEventListener('click', () => {
+      clicked = true;
+    });
     container.appendChild(button);
 
     const index = new TextIndex(container);

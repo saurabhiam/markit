@@ -12,9 +12,16 @@ export function scheduleBatched<T>(
   let cancelled = false;
   let index = 0;
 
-  const scheduleNext = typeof requestIdleCallback !== 'undefined'
-    ? (cb: () => void) => requestIdleCallback(() => { if (!cancelled) cb(); })
-    : (cb: () => void) => requestAnimationFrame(() => { if (!cancelled) cb(); });
+  const scheduleNext =
+    typeof requestIdleCallback !== 'undefined'
+      ? (cb: () => void) =>
+          requestIdleCallback(() => {
+            if (!cancelled) cb();
+          })
+      : (cb: () => void) =>
+          requestAnimationFrame(() => {
+            if (!cancelled) cb();
+          });
 
   function processNext(): void {
     if (cancelled || index >= items.length) {
@@ -32,7 +39,9 @@ export function scheduleBatched<T>(
 
   scheduleNext(processNext);
 
-  return () => { cancelled = true; };
+  return () => {
+    cancelled = true;
+  };
 }
 
 /**

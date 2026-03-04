@@ -112,7 +112,10 @@ describe('markit instance', () => {
     container.innerHTML = '<p>hello world</p>';
     const instance = markit(container);
     instance.markRanges(
-      [{ start: 0, length: 5 }, { start: 6, length: 5 }],
+      [
+        { start: 0, length: 5 },
+        { start: 6, length: 5 },
+      ],
       { renderer: 'dom' },
     );
 
@@ -156,7 +159,8 @@ describe('markit instance', () => {
   });
 
   it('handles deeply nested DOM', () => {
-    container.innerHTML = '<div><section><article><p>deep content here</p></article></section></div>';
+    container.innerHTML =
+      '<div><section><article><p>deep content here</p></article></section></div>';
     const instance = markit(container);
     instance.mark('deep', { renderer: 'dom' });
 
@@ -169,10 +173,12 @@ describe('markit instance', () => {
   describe('plugin system', () => {
     it('runs beforeSearch plugin hook', () => {
       container.innerHTML = '<p>hello world</p>';
-      const instance = markit(container, [{
-        name: 'test-plugin',
-        beforeSearch: (term) => term.toUpperCase(),
-      }]);
+      const instance = markit(container, [
+        {
+          name: 'test-plugin',
+          beforeSearch: (term) => term.toUpperCase(),
+        },
+      ]);
 
       instance.mark('hello', { renderer: 'dom', caseSensitive: true });
       // The plugin uppercases the search term, so 'hello' won't match 'HELLO'
@@ -183,10 +189,12 @@ describe('markit instance', () => {
 
     it('runs afterMatch plugin hook', () => {
       container.innerHTML = '<p>foo bar baz</p>';
-      const instance = markit(container, [{
-        name: 'limiter',
-        afterMatch: (matches) => matches.slice(0, 1),
-      }]);
+      const instance = markit(container, [
+        {
+          name: 'limiter',
+          afterMatch: (matches) => matches.slice(0, 1),
+        },
+      ]);
 
       instance.mark('foo', { renderer: 'dom' });
       expect(instance.getMatches()).toHaveLength(1);
@@ -197,10 +205,12 @@ describe('markit instance', () => {
     it('runs afterRender plugin hook', () => {
       const afterRender = vi.fn();
       container.innerHTML = '<p>hello</p>';
-      const instance = markit(container, [{
-        name: 'notifier',
-        afterRender,
-      }]);
+      const instance = markit(container, [
+        {
+          name: 'notifier',
+          afterRender,
+        },
+      ]);
 
       instance.mark('hello', { renderer: 'dom' });
       expect(afterRender).toHaveBeenCalledWith(1, expect.any(Object));

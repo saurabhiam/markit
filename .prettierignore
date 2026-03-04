@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.turbo/
+bun.lock
+*.tsbuildinfo
+coverage/
+apps/docs/.vitepress/dist/
+apps/docs/.vitepress/cache/
+apps/e2e-bench/test-results/
+apps/e2e-bench/playwright-report/

@@ -66,9 +66,9 @@ The engine is selected automatically via feature detection, or you can force one
 
 ```typescript
 instance.mark('term', { renderer: 'highlight-api' }); // Force Highlight API
-instance.mark('term', { renderer: 'dom' });            // Force DOM wrapping
-instance.mark('term', { renderer: 'overlay' });        // Force overlay positioning
-instance.mark('term', { renderer: 'auto' });           // Auto-detect (default)
+instance.mark('term', { renderer: 'dom' }); // Force DOM wrapping
+instance.mark('term', { renderer: 'overlay' }); // Force overlay positioning
+instance.mark('term', { renderer: 'auto' }); // Auto-detect (default)
 ```
 
 ## Styling Highlights
