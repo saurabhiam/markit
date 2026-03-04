@@ -21,12 +21,12 @@ bun install
 
 Create a branch off `main` using this convention:
 
-| Type      | Pattern                        | Example                        |
-| --------- | ------------------------------ | ------------------------------ |
-| Feature   | `feature/<ticket>-<desc>`      | `feature/CX-123-batch-render`  |
-| Bug fix   | `fix/<ticket>-<desc>`          | `fix/CX-456-overlay-position`  |
-| Chore     | `chore/<desc>`                 | `chore/update-deps`            |
-| Docs      | `docs/<desc>`                  | `docs/batch-size-guide`        |
+| Type    | Pattern                   | Example                       |
+| ------- | ------------------------- | ----------------------------- |
+| Feature | `feature/<ticket>-<desc>` | `feature/CX-123-batch-render` |
+| Bug fix | `fix/<ticket>-<desc>`     | `fix/CX-456-overlay-position` |
+| Chore   | `chore/<desc>`            | `chore/update-deps`           |
+| Docs    | `docs/<desc>`             | `docs/batch-size-guide`       |
 
 ### Common commands
 
