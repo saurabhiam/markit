@@ -25,6 +25,17 @@ jobs:
       - name: Measure bundle sizes
         id: measure
         run: |
+          fmt() {
+            local bytes=$1
+            if [ "$bytes" -ge 1048576 ]; then
+              echo "$(echo "scale=2; $bytes/1048576" | bc) MB"
+            elif [ "$bytes" -ge 1024 ]; then
+              echo "$(echo "scale=2; $bytes/1024" | bc) KB"
+            else
+              echo "${bytes} B"
+            fi
+          }
+
           CORE_RAW=$(wc -c < packages/core/dist/index.js | tr -d ' ')
           CORE_GZ=$(gzip -c packages/core/dist/index.js | wc -c | tr -d ' ')
           REACT_RAW=$(wc -c < packages/react/dist/index.js | tr -d ' ')
@@ -32,38 +43,38 @@ jobs:
           NG_RAW=$(wc -c < packages/angular/dist/fesm2022/markit-angular.mjs | tr -d ' ')
           NG_GZ=$(gzip -c packages/angular/dist/fesm2022/markit-angular.mjs | wc -c | tr -d ' ')
 
-          CORE_KB=$(echo "scale=1; $CORE_GZ/1024" | bc)
-          REACT_KB=$(echo "scale=1; $REACT_GZ/1024" | bc)
-          NG_KB=$(echo "scale=1; $NG_GZ/1024" | bc)
+          CORE_RAW_FMT=$(fmt $CORE_RAW)
+          CORE_GZ_FMT=$(fmt $CORE_GZ)
+          REACT_RAW_FMT=$(fmt $REACT_RAW)
+          REACT_GZ_FMT=$(fmt $REACT_GZ)
+          NG_RAW_FMT=$(fmt $NG_RAW)
+          NG_GZ_FMT=$(fmt $NG_GZ)
 
-          echo "core_raw=$CORE_RAW" >> $GITHUB_OUTPUT
-          echo "core_gz=$CORE_GZ" >> $GITHUB_OUTPUT
-          echo "core_kb=$CORE_KB" >> $GITHUB_OUTPUT
-          echo "react_raw=$REACT_RAW" >> $GITHUB_OUTPUT
-          echo "react_gz=$REACT_GZ" >> $GITHUB_OUTPUT
-          echo "react_kb=$REACT_KB" >> $GITHUB_OUTPUT
-          echo "ng_raw=$NG_RAW" >> $GITHUB_OUTPUT
-          echo "ng_gz=$NG_GZ" >> $GITHUB_OUTPUT
-          echo "ng_kb=$NG_KB" >> $GITHUB_OUTPUT
+          echo "core_raw=$CORE_RAW_FMT" >> $GITHUB_OUTPUT
+          echo "core_gz=$CORE_GZ_FMT" >> $GITHUB_OUTPUT
+          echo "react_raw=$REACT_RAW_FMT" >> $GITHUB_OUTPUT
+          echo "react_gz=$REACT_GZ_FMT" >> $GITHUB_OUTPUT
+          echo "ng_raw=$NG_RAW_FMT" >> $GITHUB_OUTPUT
+          echo "ng_gz=$NG_GZ_FMT" >> $GITHUB_OUTPUT
 
           FAILED=0
           STATUS="✅ All packages within size limits"
 
           if [ "$CORE_GZ" -gt 15360 ]; then
-            echo "::error::@markit/core exceeds 15KB gzipped ($CORE_GZ bytes > 15360 limit)"
-            STATUS="❌ @markit/core exceeds 15KB gzipped limit (${CORE_KB}KB)"
+            echo "::error::@markit/core exceeds 15 KB gzipped ($CORE_GZ_FMT > 15 KB limit)"
+            STATUS="❌ @markit/core exceeds 15 KB gzipped limit ($CORE_GZ_FMT)"
             FAILED=1
           fi
 
           if [ "$REACT_GZ" -gt 3072 ]; then
-            echo "::error::@markit/react exceeds 3KB gzipped ($REACT_GZ bytes > 3072 limit)"
-            STATUS="❌ @markit/react exceeds 3KB gzipped limit (${REACT_KB}KB)"
+            echo "::error::@markit/react exceeds 3 KB gzipped ($REACT_GZ_FMT > 3 KB limit)"
+            STATUS="❌ @markit/react exceeds 3 KB gzipped limit ($REACT_GZ_FMT)"
             FAILED=1
           fi
 
           if [ "$NG_GZ" -gt 5120 ]; then
-            echo "::error::@markit/angular exceeds 5KB gzipped ($NG_GZ bytes > 5120 limit)"
-            STATUS="❌ @markit/angular exceeds 5KB gzipped limit (${NG_KB}KB)"
+            echo "::error::@markit/angular exceeds 5 KB gzipped ($NG_GZ_FMT > 5 KB limit)"
+            STATUS="❌ @markit/angular exceeds 5 KB gzipped limit ($NG_GZ_FMT)"
             FAILED=1
           fi
 
@@ -75,9 +86,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Package | Raw | Gzipped | Limit |" >> $GITHUB_STEP_SUMMARY
           echo "|---------|-----|---------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| \`@markit/core\` | ${CORE_RAW}B | **${CORE_KB}KB** | 15KB |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`@markit/react\` | ${REACT_RAW}B | **${REACT_KB}KB** | 3KB |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`@markit/angular\` | ${NG_RAW}B | **${NG_KB}KB** | 5KB |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markit/core\` | $CORE_RAW_FMT | **$CORE_GZ_FMT** | 15 KB |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markit/react\` | $REACT_RAW_FMT | **$REACT_GZ_FMT** | 3 KB |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markit/angular\` | $NG_RAW_FMT | **$NG_GZ_FMT** | 5 KB |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "$STATUS" >> $GITHUB_STEP_SUMMARY
 
@@ -87,18 +98,6 @@ jobs:
         with:
           script: |
             const marker = '<!-- bundle-size-report -->';
-            const corePkg = {
-              raw: '${{ steps.measure.outputs.core_raw }}',
-              kb: '${{ steps.measure.outputs.core_kb }}',
-            };
-            const reactPkg = {
-              raw: '${{ steps.measure.outputs.react_raw }}',
-              kb: '${{ steps.measure.outputs.react_kb }}',
-            };
-            const ngPkg = {
-              raw: '${{ steps.measure.outputs.ng_raw }}',
-              kb: '${{ steps.measure.outputs.ng_kb }}',
-            };
             const status = `${{ steps.measure.outputs.status }}`;
 
             const body = [
@@ -107,9 +106,9 @@ jobs:
               '',
               '| Package | Raw | Gzipped | Limit |',
               '|---------|-----|---------|-------|',
-              `| \`@markit/core\` | ${corePkg.raw}B | **${corePkg.kb}KB** | 15KB |`,
-              `| \`@markit/react\` | ${reactPkg.raw}B | **${reactPkg.kb}KB** | 3KB |`,
-              `| \`@markit/angular\` | ${ngPkg.raw}B | **${ngPkg.kb}KB** | 5KB |`,
+              `| \`@markit/core\` | ${{ steps.measure.outputs.core_raw }} | **${{ steps.measure.outputs.core_gz }}** | 15 KB |`,
+              `| \`@markit/react\` | ${{ steps.measure.outputs.react_raw }} | **${{ steps.measure.outputs.react_gz }}** | 3 KB |`,
+              `| \`@markit/angular\` | ${{ steps.measure.outputs.ng_raw }} | **${{ steps.measure.outputs.ng_gz }}** | 5 KB |`,
               '',
               status,
             ].join('\n');
