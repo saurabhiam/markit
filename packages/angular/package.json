@@ -1,0 +1,36 @@
+{
+  "name": "@markit/angular",
+  "version": "0.0.1",
+  "description": "Angular bindings for @markit/core text highlighting engine",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@markit/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@angular/core": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "@angular/common": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@angular/core": "^19",
+    "@angular/common": "^19",
+    "@angular/compiler": "^19",
+    "@angular/build": "^19",
+    "@angular/compiler-cli": "^19",
+    "@angular/platform-browser": "^19",
+    "@angular/platform-browser-dynamic": "^19",
+    "zone.js": "^0.15",
+    "rxjs": "^7",
+    "typescript": "^5.7",
+    "@analogjs/vite-plugin-angular": "^1",
+    "@analogjs/vitest-angular": "^1",
+    "vitest": "^3",
+    "vite": "^6"
+  },
+  "keywords": ["highlight", "search", "text", "mark", "angular", "directive"],
+  "license": "MIT"
+}

@@ -1,0 +1,21 @@
+.VPFooter .message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.VPFooter .message .footer-india {
+  margin-left: auto;
+}
+
+.VPFooter .message .footer-india a {
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.VPFooter .message .footer-india a:hover {
+  color: var(--vp-c-text-1);
+}

@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Turborepo
+.turbo/
+
+# VitePress
+apps/docs/.vitepress/dist/
+apps/docs/.vitepress/cache/
+
+# Playwright
+apps/e2e-bench/test-results/
+apps/e2e-bench/playwright-report/
+
+# Coverage
+coverage/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo

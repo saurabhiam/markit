@@ -1,0 +1,16 @@
+{
+  "name": "@markit/e2e-bench",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Playwright performance benchmarks for @markit/core",
+  "type": "module",
+  "scripts": {
+    "bench": "playwright test",
+    "bench:headed": "playwright test --headed",
+    "serve": "npx serve public -l 3456 -s"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1",
+    "serve": "^14"
+  }
+}
