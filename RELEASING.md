@@ -134,46 +134,72 @@ Merge the `next` branch back to `main` via a PR. The next release from `main` wi
 
 ## npm Setup
 
+### Prerequisites
+
+- An npm account at [npmjs.com](https://www.npmjs.com)
+- The `markitjs` npm organization (owns the `@markitjs` scope)
+- Two-factor authentication enabled on your npm account
+
 ### Token creation
 
-1. Go to [npmjs.com](https://www.npmjs.com) → Access Tokens → Generate New Token
-2. Select **Granular Access Token**:
-   - Token name: `github-actions-markit`
-   - Expiration: 365 days (set a calendar reminder to rotate)
-   - Packages: Read and write
-   - Scope: `@markit`
-3. Copy the token
+As of November 2025, npm only supports **Granular Access Tokens**. Write-enabled tokens have a **maximum expiration of 90 days**.
 
-### GitHub configuration
+1. Go to [npmjs.com](https://www.npmjs.com) → click your avatar → **Access Tokens**
+2. Click **Generate New Token** (Granular Access Token is the only option)
+3. Configure:
 
-1. Go to the repository → Settings → Environments → **npm-publish**
-2. Add environment secret: `NPM_TOKEN` = the token value
+| Field | Value |
+| --- | --- |
+| **Token name** | `github-actions-markitjs` |
+| **Description** | `CI/CD publishing from GitHub Actions` |
+| **Bypass two-factor authentication** | Checked (required for CI — no human to enter 2FA) |
+| **Allowed IP Ranges** | Leave blank (GitHub Actions IPs rotate) |
+| **Expiration** | 90 days (maximum allowed for write tokens) |
+| **Packages and scopes** | Read and write, scoped to `@markitjs` |
+| **Organizations** | `markitjs` → Read and write |
+
+4. Click **Generate Token**
+5. **Copy the token immediately** — it is shown only once
+
+### GitHub Environment setup
+
+The release workflow uses a GitHub Environment called `npm-publish` for protection:
+
+1. Go to the repository → **Settings** → **Environments** → **New environment**
+2. Name: `npm-publish`
 3. Configure protection rules:
-   - **Required reviewers**: Add maintainer(s)
-   - **Deployment branches**: Only `main` (and `next` if using prereleases)
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| **Required reviewers** | Add maintainer(s) | Every publish requires human approval |
+| **Prevent self-review** | Unchecked (for solo maintainers) | You need to approve your own releases |
+| **Wait timer** | 0 | No delay needed |
+| **Deployment branches** | Selected branches: `main`, `next` | Only release/prerelease branches can publish |
+
+4. Under **Environment secrets** → **Add secret**:
+   - Name: `NPM_TOKEN`
+   - Value: the token from the step above
+
+Environment secrets are more secure than repository-level secrets — they are only exposed to workflows that reference the `npm-publish` environment.
 
 The release workflow uses `actions/setup-node` with `registry-url` to configure npm authentication at runtime. No `.npmrc` file is needed in the repository.
 
-### Token rotation
+### Token rotation (every 80 days)
 
-Rotate the npm token annually:
+npm write tokens expire after 90 days. Set a **calendar reminder for 80 days** after each token creation.
 
-1. Generate a new token on npmjs.com
-2. Update the `NPM_TOKEN` secret in the `npm-publish` GitHub Environment
-3. Delete the old token on npmjs.com
+**Rotation procedure:**
 
----
+1. Go to [npmjs.com](https://www.npmjs.com) → Access Tokens → **Generate New Token** (same settings as above)
+2. Go to GitHub → Settings → Environments → `npm-publish` → update the `NPM_TOKEN` secret with the new token
+3. Go back to npmjs.com → **delete the old token**
+4. Set a new 80-day calendar reminder
 
-## GitHub Environment Setup
+**If the token expires before rotation:**
 
-The release workflow uses a GitHub Environment called `npm-publish` for additional protection:
-
-1. **Settings → Environments → New environment**: `npm-publish`
-2. **Required reviewers**: Add yourself (the release will pause and wait for approval)
-3. **Deployment branches**: Restrict to `main` only
-4. **Environment secrets**: Add `NPM_TOKEN` here (more secure than repo-level secrets)
-
-This means every release requires explicit human approval, even after the Version PR is merged.
+- The release workflow will fail at the publish step with an authentication error
+- No packages will be published (safe failure — nothing breaks)
+- Generate a new token, update the secret, and re-run the workflow manually via `workflow_dispatch`
 
 ---
 
@@ -193,10 +219,17 @@ If no files exist, no changeset was added. Run `bunx changeset` to create one.
 
 1. Check the [Actions tab](https://github.com/saurabhiam/markit/actions/workflows/release.yml) for the failed run
 2. Common causes:
-   - **npm token expired**: Rotate the token (see npm Setup above)
+   - **npm token expired** (most common): Rotate the token — see [Token rotation](#token-rotation-every-80-days) above
    - **Build failure**: Fix the build, the next push to `main` will re-trigger
-   - **Package name conflict**: Ensure `@markit` scope is available on npm
+   - **Package name conflict**: Ensure the `@markitjs` scope is available on npm
+   - **2FA prompt**: Ensure the token was created with "Bypass two-factor authentication" checked
 3. After fixing, re-run the release workflow manually via `workflow_dispatch`
+
+### npm token expired
+
+Symptoms: publish step fails with `401 Unauthorized` or `ENEEDAUTH`.
+
+Fix: Generate a new token on npmjs.com, update `NPM_TOKEN` in the `npm-publish` GitHub Environment, re-run the workflow. See [Token rotation](#token-rotation-every-80-days).
 
 ### Version PR has wrong bump level
 
@@ -227,6 +260,30 @@ Within 72 hours, you can unpublish:
 ```bash
 npm unpublish @markitjs/core@1.2.3
 ```
+
+---
+
+## First Release (One-Time Setup)
+
+Before the very first publish, verify these prerequisites:
+
+```
+[ ] npm organization @markitjs exists on npmjs.com
+[ ] npm Granular Access Token created (write, @markitjs scope, bypass 2FA)
+[ ] GitHub Environment npm-publish created with NPM_TOKEN secret
+[ ] GitHub Environment has required reviewers and branch restrictions
+[ ] All three packages have correct names in package.json (@markitjs/core, @markitjs/react, @markitjs/angular)
+[ ] .changeset/config.json has the fixed group and ignore list configured
+```
+
+To trigger the first release:
+
+1. Create a changeset: `bunx changeset` — select a package, choose the bump type (likely `minor` for first feature release), write a summary
+2. Commit and push to `main`
+3. The release workflow opens a "chore: version packages" PR
+4. Review the PR — verify versions and changelogs
+5. Merge it — packages publish to npm, tags and GitHub Releases are created
+6. Verify: `npm info @markitjs/core` should show the published version
 
 ---
 
@@ -264,12 +321,21 @@ For critical fixes that need to ship immediately:
 [ ] Documentation site updated (auto-deploys)
 ```
 
+### Every 80 days (token rotation)
+
+```
+[ ] Generate a new npm token (90-day expiry, write access, @markitjs scope)
+[ ] Update NPM_TOKEN in GitHub Environment npm-publish
+[ ] Delete the old token on npmjs.com
+[ ] Set next 80-day calendar reminder
+```
+
 ### Quarterly maintenance
 
 ```
-[ ] npm token is valid and not nearing expiration
 [ ] GitHub Environment protection rules are still correct
 [ ] Review and clean up any stale prerelease tags on npm
+[ ] Verify npm org membership and permissions are current
 ```
 
 ---
