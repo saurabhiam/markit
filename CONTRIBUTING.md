@@ -5,7 +5,7 @@ Thanks for your interest in contributing! This guide covers the essentials.
 ## Prerequisites
 
 - [Bun](https://bun.sh/) v1.3+ (used as the package manager and script runner)
-- [Node.js](https://nodejs.org/) v18+ (required by some tooling)
+- [Node.js](https://nodejs.org/) v20+ (required by Angular build tooling)
 
 ## Setup
 

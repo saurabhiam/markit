@@ -1,0 +1,151 @@
+name: Bundle Size
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.10'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      - name: Measure bundle sizes
+        id: sizes
+        run: |
+          fmt() {
+            local bytes=$1
+            if [ "$bytes" -ge 1073741824 ]; then
+              echo "$(echo "scale=2; $bytes / 1073741824" | bc) GB"
+            elif [ "$bytes" -ge 1048576 ]; then
+              echo "$(echo "scale=2; $bytes / 1048576" | bc) MB"
+            elif [ "$bytes" -ge 1024 ]; then
+              echo "$(echo "scale=2; $bytes / 1024" | bc) KB"
+            else
+              echo "${bytes} B"
+            fi
+          }
+
+          CORE_RAW=$(wc -c < packages/core/dist/index.js | tr -d ' ')
+          CORE_GZ=$(gzip -c packages/core/dist/index.js | wc -c | tr -d ' ')
+
+          REACT_RAW=$(wc -c < packages/react/dist/index.js | tr -d ' ')
+          REACT_GZ=$(gzip -c packages/react/dist/index.js | wc -c | tr -d ' ')
+
+          NG_RAW=$(wc -c < packages/angular/dist/markit-angular/fesm2022/markit-angular.mjs | tr -d ' ')
+          NG_GZ=$(gzip -c packages/angular/dist/markit-angular/fesm2022/markit-angular.mjs | wc -c | tr -d ' ')
+
+          FAIL=0
+
+          # Limits (gzipped bytes)
+          CORE_LIMIT=15360   # 15 KB
+          REACT_LIMIT=3072   # 3 KB
+          NG_LIMIT=5120      # 5 KB
+
+          CORE_STATUS="✅"
+          REACT_STATUS="✅"
+          NG_STATUS="✅"
+
+          if [ "$CORE_GZ" -gt "$CORE_LIMIT" ]; then CORE_STATUS="❌"; FAIL=1; fi
+          if [ "$REACT_GZ" -gt "$REACT_LIMIT" ]; then REACT_STATUS="❌"; FAIL=1; fi
+          if [ "$NG_GZ" -gt "$NG_LIMIT" ]; then NG_STATUS="❌"; FAIL=1; fi
+
+          echo "core_raw=$(fmt $CORE_RAW)" >> $GITHUB_OUTPUT
+          echo "core_gz=$(fmt $CORE_GZ)" >> $GITHUB_OUTPUT
+          echo "core_status=$CORE_STATUS" >> $GITHUB_OUTPUT
+          echo "react_raw=$(fmt $REACT_RAW)" >> $GITHUB_OUTPUT
+          echo "react_gz=$(fmt $REACT_GZ)" >> $GITHUB_OUTPUT
+          echo "react_status=$REACT_STATUS" >> $GITHUB_OUTPUT
+          echo "ng_raw=$(fmt $NG_RAW)" >> $GITHUB_OUTPUT
+          echo "ng_gz=$(fmt $NG_GZ)" >> $GITHUB_OUTPUT
+          echo "ng_status=$NG_STATUS" >> $GITHUB_OUTPUT
+          echo "fail=$FAIL" >> $GITHUB_OUTPUT
+
+          echo "### 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | Raw | Gzipped | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-----|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| @markit/core | $(fmt $CORE_RAW) | $(fmt $CORE_GZ) | $CORE_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| @markit/react | $(fmt $REACT_RAW) | $(fmt $REACT_GZ) | $REACT_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| @markit/angular | $(fmt $NG_RAW) | $(fmt $NG_GZ) | $NG_STATUS |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- bundle-size-report -->';
+            const corePkg = {
+              raw: '${{ steps.sizes.outputs.core_raw }}',
+              gz: '${{ steps.sizes.outputs.core_gz }}',
+              status: '${{ steps.sizes.outputs.core_status }}'
+            };
+            const reactPkg = {
+              raw: '${{ steps.sizes.outputs.react_raw }}',
+              gz: '${{ steps.sizes.outputs.react_gz }}',
+              status: '${{ steps.sizes.outputs.react_status }}'
+            };
+            const ngPkg = {
+              raw: '${{ steps.sizes.outputs.ng_raw }}',
+              gz: '${{ steps.sizes.outputs.ng_gz }}',
+              status: '${{ steps.sizes.outputs.ng_status }}'
+            };
+
+            const body = `${marker}
+            ## 📦 Bundle Size Report
+
+            | Package | Raw | Gzipped | Status |
+            |---------|-----|---------|--------|
+            | \`@markit/core\` | ${corePkg.raw} | ${corePkg.gz} | ${corePkg.status} |
+            | \`@markit/react\` | ${reactPkg.raw} | ${reactPkg.gz} | ${reactPkg.status} |
+            | \`@markit/angular\` | ${ngPkg.raw} | ${ngPkg.gz} | ${ngPkg.status} |
+
+            <sub>Limits — core: 15 KB, react: 3 KB, angular: 5 KB (gzipped)</sub>`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const existing = comments.find(c => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
+
+      - name: Fail if over limit
+        if: steps.sizes.outputs.fail == '1'
+        run: |
+          echo "::error::Bundle size exceeds limits!"
+          exit 1
