@@ -44,8 +44,8 @@ jobs:
           CORE_GZ=$(gzip -c packages/core/dist/index.js | wc -c | tr -d ' ')
           REACT_RAW=$(wc -c < packages/react/dist/index.js | tr -d ' ')
           REACT_GZ=$(gzip -c packages/react/dist/index.js | wc -c | tr -d ' ')
-          NG_RAW=$(wc -c < packages/angular/dist/fesm2022/markit-angular.mjs | tr -d ' ')
-          NG_GZ=$(gzip -c packages/angular/dist/fesm2022/markit-angular.mjs | wc -c | tr -d ' ')
+          NG_RAW=$(wc -c < packages/angular/dist/fesm2022/markitjs-angular.mjs | tr -d ' ')
+          NG_GZ=$(gzip -c packages/angular/dist/fesm2022/markitjs-angular.mjs | wc -c | tr -d ' ')
 
           CORE_RAW_FMT=$(fmt $CORE_RAW)
           CORE_GZ_FMT=$(fmt $CORE_GZ)
