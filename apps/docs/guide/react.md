@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-npm install @markit/core @markit/react
+npm install @markit/react
 ```
 
 ## Hook Usage

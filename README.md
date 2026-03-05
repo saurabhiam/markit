@@ -40,7 +40,7 @@ instance.destroy();
 ### React / Next.js
 
 ```bash
-npm install @markit/core @markit/react
+npm install @markit/react
 ```
 
 ```tsx
@@ -132,7 +132,7 @@ markit/
 ### Prerequisites
 
 - [Bun](https://bun.sh/) >= 1.3 (package manager & script runner)
-- Node.js >= 18 (for some tooling)
+- Node.js >= 20 (required by Angular build tooling)
 
 ### Setup
 

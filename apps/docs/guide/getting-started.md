@@ -27,7 +27,7 @@ For framework-specific wrappers:
 npm install @markit/react
 
 # Angular
-npm install @markit/angular
+npm install @markit/angular @markit/core
 ```
 
 ## Quick Start (Vanilla JS)
