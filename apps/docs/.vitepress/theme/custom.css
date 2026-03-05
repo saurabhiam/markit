@@ -1,3 +1,43 @@
+/* MarkIt animated gradient (blue → violet) */
+/* Override theme variables so theme does not paint solid color */
+:root {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: none;
+}
+.dark {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: none;
+}
+
+@keyframes markit-gradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.VPHero .name {
+  color: transparent;
+  background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6, #6366f1, #3b82f6);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: markit-gradient 4s ease infinite;
+}
+
+/* Win in dark mode (same specificity as theme’s .dark .VPHero .name, source order wins) */
+.dark .VPHero .name {
+  color: transparent;
+  background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6, #6366f1, #3b82f6);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: markit-gradient 4s ease infinite;
+}
+
 .VPFooter .message {
   display: flex;
   justify-content: center;
