@@ -5,9 +5,9 @@ React bindings for the [@markit/core](https://github.com/saurabhiam/markit/tree/
 ## Install
 
 ```bash
-npm install @markit/react @markit/core
+npm install @markit/react
 # or
-bun add @markit/react @markit/core
+bun add @markit/react
 ```
 
 **Peer dependencies:** React 18+ or 19+

@@ -6,6 +6,8 @@ on:
     paths:
       - 'apps/docs/**'
       - 'packages/core/src/**'
+      - 'packages/react/src/**'
+      - 'packages/angular/src/**'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
