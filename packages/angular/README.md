@@ -87,11 +87,11 @@ export class EditorComponent implements OnDestroy {
 
 Standalone attribute directive. Apply to any element whose text content you want to highlight.
 
-| Input             | Type                     | Description                                           |
-| ----------------- | ------------------------ | ----------------------------------------------------- |
-| `markitHighlight` | `string \| string[]`     | Search term(s) to highlight                           |
+| Input             | Type                     | Description                                             |
+| ----------------- | ------------------------ | ------------------------------------------------------- |
+| `markitHighlight` | `string \| string[]`     | Search term(s) to highlight                             |
 | `markitOptions`   | `Partial<MarkitOptions>` | All `@markitjs/core` options (renderer, accuracy, etc.) |
-| `markitPlugins`   | `MarkitPlugin[]`         | Plugins to register                                   |
+| `markitPlugins`   | `MarkitPlugin[]`         | Plugins to register                                     |
 
 ### `MarkitService`
 

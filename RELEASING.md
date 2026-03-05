@@ -27,11 +27,11 @@ This is configured in `.changeset/config.json` via the `fixed` array.
 
 ### Semantic Versioning
 
-| Bump  | When                                | Example         |
-| ----- | ----------------------------------- | --------------- |
-| Patch | Bug fix, no API changes             | `1.0.0 → 1.0.1` |
-| Minor | New feature, backwards-compatible   | `1.0.0 → 1.1.0` |
-| Major | Breaking change                     | `1.0.0 → 2.0.0` |
+| Bump  | When                              | Example         |
+| ----- | --------------------------------- | --------------- |
+| Patch | Bug fix, no API changes           | `1.0.0 → 1.0.1` |
+| Minor | New feature, backwards-compatible | `1.0.0 → 1.1.0` |
+| Major | Breaking change                   | `1.0.0 → 2.0.0` |
 
 ### Pre-1.0
 
@@ -50,6 +50,7 @@ bunx changeset
 ```
 
 This prompts you to:
+
 - Select which packages changed (all are bumped together due to fixed versioning)
 - Choose the semver bump type (patch / minor / major)
 - Write a human-readable summary of the change
@@ -65,6 +66,7 @@ After merge, the release workflow (`release.yml`) runs and the `changesets/actio
 ### 3. Review the Version PR
 
 The Version PR contains:
+
 - Version bumps in all `package.json` files
 - Updated `CHANGELOG.md` in each package directory
 - All `.changeset/*.md` files consumed
@@ -112,11 +114,11 @@ Published versions look like: `1.0.0-beta.0`, `1.0.0-beta.1`, etc.
 
 ### npm dist-tags for prereleases
 
-| Prerelease type | npm tag  | Install command                      |
-| --------------- | -------- | ------------------------------------ |
-| `alpha`         | `alpha`  | `npm install @markitjs/core@alpha`     |
-| `beta`          | `beta`   | `npm install @markitjs/core@beta`      |
-| `rc`            | `next`   | `npm install @markitjs/core@next`      |
+| Prerelease type | npm tag | Install command                    |
+| --------------- | ------- | ---------------------------------- |
+| `alpha`         | `alpha` | `npm install @markitjs/core@alpha` |
+| `beta`          | `beta`  | `npm install @markitjs/core@beta`  |
+| `rc`            | `next`  | `npm install @markitjs/core@next`  |
 
 ### Exit prerelease mode and go stable
 
@@ -274,11 +276,11 @@ For critical fixes that need to ship immediately:
 
 ## Workflow Files Reference
 
-| Workflow | File | Trigger | Purpose |
-| --- | --- | --- | --- |
-| CI | `.github/workflows/ci.yml` | Push/PR to `main` | Build, test, typecheck, format, node compat |
-| Release | `.github/workflows/release.yml` | Push to `main`, manual | Version PR management + npm publish |
-| Prerelease | `.github/workflows/prerelease.yml` | Push to `next` | Prerelease version management + publish |
-| Docs | `.github/workflows/docs.yml` | Push to `main` (path-filtered) | Build and deploy documentation |
-| Bundle Size | `.github/workflows/bundle-size.yml` | PR to `main` | Measure and report bundle sizes |
-| Dependency Review | `.github/workflows/dependency-review.yml` | PR to `main` | Block vulnerable/problematic dependencies |
+| Workflow          | File                                      | Trigger                        | Purpose                                     |
+| ----------------- | ----------------------------------------- | ------------------------------ | ------------------------------------------- |
+| CI                | `.github/workflows/ci.yml`                | Push/PR to `main`              | Build, test, typecheck, format, node compat |
+| Release           | `.github/workflows/release.yml`           | Push to `main`, manual         | Version PR management + npm publish         |
+| Prerelease        | `.github/workflows/prerelease.yml`        | Push to `next`                 | Prerelease version management + publish     |
+| Docs              | `.github/workflows/docs.yml`              | Push to `main` (path-filtered) | Build and deploy documentation              |
+| Bundle Size       | `.github/workflows/bundle-size.yml`       | PR to `main`                   | Measure and report bundle sizes             |
+| Dependency Review | `.github/workflows/dependency-review.yml` | PR to `main`                   | Block vulnerable/problematic dependencies   |

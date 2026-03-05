@@ -13,10 +13,10 @@ High-performance text highlighting for the modern web. A production-grade altern
 
 ## Packages
 
-| Package                               | Description                                               | Version |
-| ------------------------------------- | --------------------------------------------------------- | ------- |
-| [`@markitjs/core`](packages/core)       | Framework-agnostic highlighting engine                    | [![npm](https://img.shields.io/npm/v/@markitjs/core)](https://www.npmjs.com/package/@markitjs/core) |
-| [`@markitjs/react`](packages/react)     | React hook (`useHighlight`) and `<Highlighter>` component | [![npm](https://img.shields.io/npm/v/@markitjs/react)](https://www.npmjs.com/package/@markitjs/react) |
+| Package                                 | Description                                               | Version                                                                                                   |
+| --------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| [`@markitjs/core`](packages/core)       | Framework-agnostic highlighting engine                    | [![npm](https://img.shields.io/npm/v/@markitjs/core)](https://www.npmjs.com/package/@markitjs/core)       |
+| [`@markitjs/react`](packages/react)     | React hook (`useHighlight`) and `<Highlighter>` component | [![npm](https://img.shields.io/npm/v/@markitjs/react)](https://www.npmjs.com/package/@markitjs/react)     |
 | [`@markitjs/angular`](packages/angular) | Angular directive (`markitHighlight`) and `MarkitService` | [![npm](https://img.shields.io/npm/v/@markitjs/angular)](https://www.npmjs.com/package/@markitjs/angular) |
 
 ## Quick Start

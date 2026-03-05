@@ -1,9 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
-  "changelog": [
-    "@changesets/changelog-github",
-    { "repo": "saurabhiam/markit" }
-  ],
+  "changelog": ["@changesets/changelog-github", { "repo": "saurabhiam/markit" }],
   "commit": false,
   "fixed": [["@markitjs/core", "@markitjs/react", "@markitjs/angular"]],
   "linked": [],
