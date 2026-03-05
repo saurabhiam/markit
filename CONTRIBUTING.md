@@ -108,6 +108,16 @@ markit/
 - Prefer explicit types for public API surfaces; inferred types are fine internally.
 - Avoid `any` — use `unknown` and narrow with type guards.
 
+## Releasing
+
+The release process is documented in [RELEASING.md](RELEASING.md). In short:
+
+1. Add a changeset to your PR with `bunx changeset`
+2. After merge, a bot opens a "Version Packages" PR with bumped versions and changelogs
+3. When a maintainer merges that PR, packages are published to npm automatically
+
+Contributors only need to worry about step 1 — the rest is handled by automation.
+
 ## Questions?
 
 Open an issue or start a discussion. All questions are welcome.

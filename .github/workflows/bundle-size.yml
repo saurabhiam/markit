@@ -44,8 +44,8 @@ jobs:
           CORE_GZ=$(gzip -c packages/core/dist/index.js | wc -c | tr -d ' ')
           REACT_RAW=$(wc -c < packages/react/dist/index.js | tr -d ' ')
           REACT_GZ=$(gzip -c packages/react/dist/index.js | wc -c | tr -d ' ')
-          NG_RAW=$(wc -c < packages/angular/dist/fesm2022/markit-angular.mjs | tr -d ' ')
-          NG_GZ=$(gzip -c packages/angular/dist/fesm2022/markit-angular.mjs | wc -c | tr -d ' ')
+          NG_RAW=$(wc -c < packages/angular/dist/fesm2022/markitjs-angular.mjs | tr -d ' ')
+          NG_GZ=$(gzip -c packages/angular/dist/fesm2022/markitjs-angular.mjs | wc -c | tr -d ' ')
 
           CORE_RAW_FMT=$(fmt $CORE_RAW)
           CORE_GZ_FMT=$(fmt $CORE_GZ)
@@ -65,20 +65,20 @@ jobs:
           STATUS="✅ All packages within size limits"
 
           if [ "$CORE_GZ" -gt 15360 ]; then
-            echo "::error::@markit/core exceeds 15 KB gzipped ($CORE_GZ_FMT > 15 KB limit)"
-            STATUS="❌ @markit/core exceeds 15 KB gzipped limit ($CORE_GZ_FMT)"
+            echo "::error::@markitjs/core exceeds 15 KB gzipped ($CORE_GZ_FMT > 15 KB limit)"
+            STATUS="❌ @markitjs/core exceeds 15 KB gzipped limit ($CORE_GZ_FMT)"
             FAILED=1
           fi
 
           if [ "$REACT_GZ" -gt 3072 ]; then
-            echo "::error::@markit/react exceeds 3 KB gzipped ($REACT_GZ_FMT > 3 KB limit)"
-            STATUS="❌ @markit/react exceeds 3 KB gzipped limit ($REACT_GZ_FMT)"
+            echo "::error::@markitjs/react exceeds 3 KB gzipped ($REACT_GZ_FMT > 3 KB limit)"
+            STATUS="❌ @markitjs/react exceeds 3 KB gzipped limit ($REACT_GZ_FMT)"
             FAILED=1
           fi
 
           if [ "$NG_GZ" -gt 5120 ]; then
-            echo "::error::@markit/angular exceeds 5 KB gzipped ($NG_GZ_FMT > 5 KB limit)"
-            STATUS="❌ @markit/angular exceeds 5 KB gzipped limit ($NG_GZ_FMT)"
+            echo "::error::@markitjs/angular exceeds 5 KB gzipped ($NG_GZ_FMT > 5 KB limit)"
+            STATUS="❌ @markitjs/angular exceeds 5 KB gzipped limit ($NG_GZ_FMT)"
             FAILED=1
           fi
 
@@ -90,9 +90,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Package | Raw | Gzipped | Limit |" >> $GITHUB_STEP_SUMMARY
           echo "|---------|-----|---------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| \`@markit/core\` | $CORE_RAW_FMT | **$CORE_GZ_FMT** | 15 KB |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`@markit/react\` | $REACT_RAW_FMT | **$REACT_GZ_FMT** | 3 KB |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`@markit/angular\` | $NG_RAW_FMT | **$NG_GZ_FMT** | 5 KB |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markitjs/core\` | $CORE_RAW_FMT | **$CORE_GZ_FMT** | 15 KB |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markitjs/react\` | $REACT_RAW_FMT | **$REACT_GZ_FMT** | 3 KB |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`@markitjs/angular\` | $NG_RAW_FMT | **$NG_GZ_FMT** | 5 KB |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "$STATUS" >> $GITHUB_STEP_SUMMARY
 
@@ -110,9 +110,9 @@ jobs:
               '',
               '| Package | Raw | Gzipped | Limit |',
               '|---------|-----|---------|-------|',
-              `| \`@markit/core\` | ${{ steps.measure.outputs.core_raw }} | **${{ steps.measure.outputs.core_gz }}** | 15 KB |`,
-              `| \`@markit/react\` | ${{ steps.measure.outputs.react_raw }} | **${{ steps.measure.outputs.react_gz }}** | 3 KB |`,
-              `| \`@markit/angular\` | ${{ steps.measure.outputs.ng_raw }} | **${{ steps.measure.outputs.ng_gz }}** | 5 KB |`,
+              `| \`@markitjs/core\` | ${{ steps.measure.outputs.core_raw }} | **${{ steps.measure.outputs.core_gz }}** | 15 KB |`,
+              `| \`@markitjs/react\` | ${{ steps.measure.outputs.react_raw }} | **${{ steps.measure.outputs.react_gz }}** | 3 KB |`,
+              `| \`@markitjs/angular\` | ${{ steps.measure.outputs.ng_raw }} | **${{ steps.measure.outputs.ng_gz }}** | 5 KB |`,
               '',
               status,
             ].join('\n');

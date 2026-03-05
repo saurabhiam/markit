@@ -1,7 +1,7 @@
 {
-  "name": "@markit/react",
+  "name": "@markitjs/react",
   "version": "0.0.1",
-  "description": "React bindings for @markit/core text highlighting engine",
+  "description": "React bindings for @markitjs/core text highlighting engine",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,7 +30,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@markit/core": "workspace:*"
+    "@markitjs/core": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

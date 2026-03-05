@@ -13,20 +13,24 @@
     "clean": "turbo run clean",
     "typecheck": "turbo run typecheck",
     "e2e": "turbo run e2e",
-    "docs:dev": "turbo run dev --filter=@markit/docs",
-    "docs:build": "turbo run build --filter=@markit/docs",
-    "bench": "turbo run e2e --filter=@markit/e2e-bench",
+    "docs:dev": "turbo run dev --filter=@markitjs/docs",
+    "docs:build": "turbo run build --filter=@markitjs/docs",
+    "bench": "turbo run e2e --filter=@markitjs/e2e-bench",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "turbo": "^2",
-    "typescript": "^5.7",
+    "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2",
-    "vitest": "^3",
     "@vitest/browser": "^3",
     "jsdom": "^26",
-    "prettier": "^3"
+    "prettier": "^3",
+    "turbo": "^2",
+    "typescript": "^5.7",
+    "vitest": "^3"
   },
   "engines": {
     "node": ">=20"

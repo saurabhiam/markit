@@ -1,8 +1,8 @@
 {
-  "name": "@markit/e2e-bench",
+  "name": "@markitjs/e2e-bench",
   "version": "0.0.1",
   "private": true,
-  "description": "Playwright performance benchmarks for @markit/core",
+  "description": "Playwright performance benchmarks for @markitjs/core",
   "type": "module",
   "scripts": {
     "bench": "playwright test",

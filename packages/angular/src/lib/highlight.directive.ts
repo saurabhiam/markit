@@ -7,8 +7,8 @@ import {
   OnDestroy,
   SimpleChanges,
 } from '@angular/core';
-import { markit } from '@markit/core';
-import type { MarkitInstance, MarkitOptions, MarkitPlugin } from '@markit/core';
+import { markit } from '@markitjs/core';
+import type { MarkitInstance, MarkitOptions, MarkitPlugin } from '@markitjs/core';
 
 /**
  * Attribute directive for text highlighting in Angular templates.

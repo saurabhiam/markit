@@ -13,22 +13,22 @@ High-performance text highlighting for the modern web. A production-grade altern
 
 ## Packages
 
-| Package                               | Description                                               | Version |
-| ------------------------------------- | --------------------------------------------------------- | ------- |
-| [`@markit/core`](packages/core)       | Framework-agnostic highlighting engine                    | `0.0.1` |
-| [`@markit/react`](packages/react)     | React hook (`useHighlight`) and `<Highlighter>` component | `0.0.1` |
-| [`@markit/angular`](packages/angular) | Angular directive (`markitHighlight`) and `MarkitService` | `0.0.1` |
+| Package                                 | Description                                               | Version                                                                                                   |
+| --------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| [`@markitjs/core`](packages/core)       | Framework-agnostic highlighting engine                    | [![npm](https://img.shields.io/npm/v/@markitjs/core)](https://www.npmjs.com/package/@markitjs/core)       |
+| [`@markitjs/react`](packages/react)     | React hook (`useHighlight`) and `<Highlighter>` component | [![npm](https://img.shields.io/npm/v/@markitjs/react)](https://www.npmjs.com/package/@markitjs/react)     |
+| [`@markitjs/angular`](packages/angular) | Angular directive (`markitHighlight`) and `MarkitService` | [![npm](https://img.shields.io/npm/v/@markitjs/angular)](https://www.npmjs.com/package/@markitjs/angular) |
 
 ## Quick Start
 
 ### Vanilla JavaScript
 
 ```bash
-npm install @markit/core
+npm install @markitjs/core
 ```
 
 ```typescript
-import { markit } from '@markit/core';
+import { markit } from '@markitjs/core';
 
 const instance = markit(document.getElementById('content'));
 instance.mark('search term', { renderer: 'auto' });
@@ -40,11 +40,11 @@ instance.destroy();
 ### React / Next.js
 
 ```bash
-npm install @markit/react
+npm install @markitjs/react
 ```
 
 ```tsx
-import { useHighlight } from '@markit/react';
+import { useHighlight } from '@markitjs/react';
 
 function SearchResults({ query }: { query: string }) {
   const ref = useHighlight(query, { caseSensitive: false });
@@ -61,11 +61,11 @@ SSR-safe — `useEffect` doesn't run during server rendering or hydration. No hy
 ### Angular
 
 ```bash
-npm install @markit/core @markit/angular
+npm install @markitjs/core @markitjs/angular
 ```
 
 ```typescript
-import { MarkitHighlightDirective } from '@markit/angular';
+import { MarkitHighlightDirective } from '@markitjs/angular';
 
 @Component({
   standalone: true,
@@ -116,9 +116,9 @@ See the [full API reference](apps/docs/guide/core-api.md) for all options and ca
 ```
 markit/
 ├── packages/
-│   ├── core/          @markit/core — highlighting engine
-│   ├── react/         @markit/react — React hook & component
-│   └── angular/       @markit/angular — Angular directive & service
+│   ├── core/          @markitjs/core — highlighting engine
+│   ├── react/         @markitjs/react — React hook & component
+│   └── angular/       @markitjs/angular — Angular directive & service
 ├── apps/
 │   ├── docs/          VitePress documentation site + playground
 │   └── e2e-bench/     Playwright real-browser performance benchmarks
@@ -189,6 +189,12 @@ Typical real-browser results (M1 MacBook, Chrome):
 | 5 keywords     | < 10ms   | < 60ms    | < 300ms   |
 | Regex          | < 10ms   | < 50ms    | < 250ms   |
 | Unmark         | < 2ms    | < 15ms    | < 80ms    |
+
+## Releasing
+
+MarkIt uses [Changesets](https://github.com/changesets/changesets) with GitHub Actions for automated releases. All packages are versioned together (fixed versioning).
+
+See [RELEASING.md](RELEASING.md) for the full release guide.
 
 ## License
 

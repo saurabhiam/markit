@@ -1,5 +1,5 @@
 import { useRef, useEffect, useMemo } from 'react';
-import { markit, type MarkitInstance, type MarkitOptions, type MarkitPlugin } from '@markit/core';
+import { markit, type MarkitInstance, type MarkitOptions, type MarkitPlugin } from '@markitjs/core';
 
 export interface UseHighlightOptions extends Partial<MarkitOptions> {
   /** Plugins to register with the markit instance. */

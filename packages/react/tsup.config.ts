@@ -9,5 +9,5 @@ export default defineConfig({
   treeshake: true,
   splitting: false,
   minify: false,
-  external: ['react', 'react-dom', '@markit/core'],
+  external: ['react', 'react-dom', '@markitjs/core'],
 });

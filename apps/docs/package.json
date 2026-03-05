@@ -1,5 +1,5 @@
 {
-  "name": "@markit/docs",
+  "name": "@markitjs/docs",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -13,6 +13,6 @@
     "vue": "^3"
   },
   "dependencies": {
-    "@markit/core": "workspace:*"
+    "@markitjs/core": "workspace:*"
   }
 }
