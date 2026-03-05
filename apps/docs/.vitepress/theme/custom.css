@@ -21,14 +21,7 @@
 
 .VPHero .name {
   color: transparent;
-  background: linear-gradient(
-    90deg,
-    #3b82f6,
-    #6366f1,
-    #8b5cf6,
-    #6366f1,
-    #3b82f6
-  );
+  background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6, #6366f1, #3b82f6);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -38,14 +31,7 @@
 /* Win in dark mode (same specificity as theme’s .dark .VPHero .name, source order wins) */
 .dark .VPHero .name {
   color: transparent;
-  background: linear-gradient(
-    90deg,
-    #3b82f6,
-    #6366f1,
-    #8b5cf6,
-    #6366f1,
-    #3b82f6
-  );
+  background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6, #6366f1, #3b82f6);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
