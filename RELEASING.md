@@ -148,15 +148,15 @@ As of November 2025, npm only supports **Granular Access Tokens**. Write-enabled
 2. Click **Generate New Token** (Granular Access Token is the only option)
 3. Configure:
 
-| Field | Value |
-| --- | --- |
-| **Token name** | `github-actions-markitjs` |
-| **Description** | `CI/CD publishing from GitHub Actions` |
+| Field                                | Value                                             |
+| ------------------------------------ | ------------------------------------------------- |
+| **Token name**                       | `github-actions-markitjs`                         |
+| **Description**                      | `CI/CD publishing from GitHub Actions`            |
 | **Bypass two-factor authentication** | Checked (required for CI — no human to enter 2FA) |
-| **Allowed IP Ranges** | Leave blank (GitHub Actions IPs rotate) |
-| **Expiration** | 90 days (maximum allowed for write tokens) |
-| **Packages and scopes** | Read and write, scoped to `@markitjs` |
-| **Organizations** | `markitjs` → Read and write |
+| **Allowed IP Ranges**                | Leave blank (GitHub Actions IPs rotate)           |
+| **Expiration**                       | 90 days (maximum allowed for write tokens)        |
+| **Packages and scopes**              | Read and write, scoped to `@markitjs`             |
+| **Organizations**                    | `markitjs` → Read and write                       |
 
 4. Click **Generate Token**
 5. **Copy the token immediately** — it is shown only once
@@ -169,11 +169,11 @@ The release workflow uses a GitHub Environment called `npm-publish` for protecti
 2. Name: `npm-publish`
 3. Configure protection rules:
 
-| Setting | Value | Why |
-| --- | --- | --- |
-| **Required reviewers** | Add maintainer(s) | Every publish requires human approval |
-| **Prevent self-review** | Unchecked (for solo maintainers) | You need to approve your own releases |
-| **Wait timer** | 0 | No delay needed |
+| Setting                 | Value                             | Why                                          |
+| ----------------------- | --------------------------------- | -------------------------------------------- |
+| **Required reviewers**  | Add maintainer(s)                 | Every publish requires human approval        |
+| **Prevent self-review** | Unchecked (for solo maintainers)  | You need to approve your own releases        |
+| **Wait timer**          | 0                                 | No delay needed                              |
 | **Deployment branches** | Selected branches: `main`, `next` | Only release/prerelease branches can publish |
 
 4. Under **Environment secrets** → **Add secret**:
