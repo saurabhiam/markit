@@ -1,11 +1,11 @@
 # React / Next.js Integration
 
-`@markit/react` provides a hook and declarative component for text highlighting.
+`@markitjs/react` provides a hook and declarative component for text highlighting.
 
 ## Installation
 
 ```bash
-npm install @markit/react
+npm install @markitjs/react
 ```
 
 ## Hook Usage
@@ -13,7 +13,7 @@ npm install @markit/react
 `useHighlight` returns a ref to attach to your container element.
 
 ```tsx
-import { useHighlight } from '@markit/react';
+import { useHighlight } from '@markitjs/react';
 
 function SearchResults({ query }: { query: string }) {
   const ref = useHighlight(query, { caseSensitive: false });
@@ -44,7 +44,7 @@ const ref = useHighlight(term, {
 `Highlighter` is a declarative wrapper around `useHighlight`.
 
 ```tsx
-import { Highlighter } from '@markit/react';
+import { Highlighter } from '@markitjs/react';
 
 function App() {
   const [query, setQuery] = useState('');
@@ -87,7 +87,7 @@ The `Highlighter` component is marked `'use client'`. It can wrap Server Compone
 
 ```tsx
 // page.tsx (Server Component)
-import { Highlighter } from '@markit/react';
+import { Highlighter } from '@markitjs/react';
 import { ArticleContent } from './article-content'; // Server Component
 
 export default function Page() {

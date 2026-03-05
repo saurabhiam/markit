@@ -5,7 +5,7 @@
 Creates a MarkIt instance bound to a root DOM element.
 
 ```typescript
-import { markit } from '@markit/core';
+import { markit } from '@markitjs/core';
 
 const instance = markit(document.getElementById('content'));
 ```

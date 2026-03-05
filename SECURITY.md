@@ -22,9 +22,9 @@ You will receive a response within 48 hours. We will work with you to understand
 
 This policy applies to:
 
-- `@markit/core`
-- `@markit/react`
-- `@markit/angular`
+- `@markitjs/core`
+- `@markitjs/react`
+- `@markitjs/angular`
 - The documentation site at [saurabhiam.github.io/markit](https://saurabhiam.github.io/markit/)
 
 ## Safe Harbor

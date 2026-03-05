@@ -111,7 +111,7 @@ function parseExclude(): string[] {
 
 async function loadMarkit() {
   if (markitModule) return;
-  markitModule = await import('@markit/core');
+  markitModule = await import('@markitjs/core');
 }
 
 async function applyHighlight() {

@@ -1,11 +1,11 @@
 # Angular Integration
 
-`@markit/angular` provides a standalone directive and injectable service for text highlighting in Angular applications.
+`@markitjs/angular` provides a standalone directive and injectable service for text highlighting in Angular applications.
 
 ## Installation
 
 ```bash
-npm install @markit/core @markit/angular
+npm install @markitjs/core @markitjs/angular
 ```
 
 ## Directive Usage
@@ -14,7 +14,7 @@ The `markitHighlight` attribute directive is the recommended approach for most u
 
 ```typescript
 import { Component } from '@angular/core';
-import { MarkitHighlightDirective } from '@markit/angular';
+import { MarkitHighlightDirective } from '@markitjs/angular';
 
 @Component({
   selector: 'app-search-results',
@@ -65,8 +65,8 @@ For programmatic control, inject `MarkitService`:
 
 ```typescript
 import { Component, ElementRef, OnDestroy } from '@angular/core';
-import { MarkitService } from '@markit/angular';
-import type { MarkitInstance } from '@markit/core';
+import { MarkitService } from '@markitjs/angular';
+import type { MarkitInstance } from '@markitjs/core';
 
 @Component({
   selector: 'app-document-viewer',

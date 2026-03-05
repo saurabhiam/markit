@@ -1,5 +1,5 @@
 {
-  "name": "@markit/core",
+  "name": "@markitjs/core",
   "version": "0.0.1",
   "description": "High-performance text highlighting engine with CSS Highlight API and DOM Range rendering",
   "type": "module",

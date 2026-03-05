@@ -1,13 +1,13 @@
-# @markit/react
+# @markitjs/react
 
-React bindings for the [@markit/core](https://github.com/saurabhiam/markit/tree/main/packages/core) text highlighting engine. Provides a `useHighlight` hook and a declarative `Highlighter` component.
+React bindings for the [@markitjs/core](https://github.com/saurabhiam/markit/tree/main/packages/core) text highlighting engine. Provides a `useHighlight` hook and a declarative `Highlighter` component.
 
 ## Install
 
 ```bash
-npm install @markit/react
+npm install @markitjs/react
 # or
-bun add @markit/react
+bun add @markitjs/react
 ```
 
 **Peer dependencies:** React 18+ or 19+
@@ -17,7 +17,7 @@ bun add @markit/react
 ### Hook
 
 ```tsx
-import { useHighlight } from '@markit/react';
+import { useHighlight } from '@markitjs/react';
 
 function SearchResults({ query }: { query: string }) {
   const ref = useHighlight(query, { caseSensitive: false });
@@ -33,7 +33,7 @@ function SearchResults({ query }: { query: string }) {
 ### Component
 
 ```tsx
-import { Highlighter } from '@markit/react';
+import { Highlighter } from '@markitjs/react';
 
 function App() {
   return (
@@ -54,7 +54,7 @@ Returns a `ref` to attach to the container element.
 
 ```ts
 const ref = useHighlight<HTMLDivElement>(term, {
-  // All @markit/core options, plus:
+  // All @markitjs/core options, plus:
   plugins: [], // MarkitPlugin[]
   timing: 'effect', // 'effect' (default) | 'layout'
 });
@@ -65,7 +65,7 @@ const ref = useHighlight<HTMLDivElement>(term, {
 | `timing`  | `'effect' \| 'layout'` | `'effect'` runs after paint (SSR-safe). `'layout'` runs before paint (avoids flash with DOM renderer). |
 | `plugins` | `MarkitPlugin[]`       | Plugins to register with the core instance.                                                            |
 
-All other options are passed through to `@markit/core`'s `mark()` method.
+All other options are passed through to `@markitjs/core`'s `mark()` method.
 
 ### `Highlighter`
 
@@ -77,7 +77,7 @@ Declarative component that wraps children and highlights matching text.
   as="div" // Container element tag (default: 'div')
   className="my-class" // Container CSS class
   style={{ padding: 16 }} // Container inline styles
-  caseSensitive={false} // Any @markit/core option
+  caseSensitive={false} // Any @markitjs/core option
   renderer="auto"
 />
 ```
@@ -102,7 +102,7 @@ The `Highlighter` component includes a `'use client'` directive. Use it inside C
 // app/search/results.tsx
 'use client';
 
-import { Highlighter } from '@markit/react';
+import { Highlighter } from '@markitjs/react';
 
 export function Results({ query, html }: { query: string; html: string }) {
   return (

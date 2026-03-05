@@ -1,18 +1,27 @@
-name: Publish
+name: Prerelease
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [next]
+
+concurrency:
+  group: prerelease-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
-  publish:
+  prerelease:
     runs-on: ubuntu-latest
+    environment: npm-publish
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -21,6 +30,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -34,19 +44,14 @@ jobs:
       - name: Test
         run: bun run test
 
-      - name: Verify CJS export
-        run: node -e "require('./packages/core/dist/index.cjs')"
-
-      - name: Verify ESM export
-        run: node --input-type=module -e "import './packages/core/dist/index.js'"
-
-      - name: Create Release Pull Request or Publish
+      - name: Publish prerelease
         uses: changesets/action@v1
         with:
           publish: bunx changeset publish
           version: bunx changeset version
-          title: 'chore: version packages'
-          commit: 'chore: version packages'
+          title: 'chore: version packages (prerelease)'
+          commit: 'chore: version packages (prerelease)'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

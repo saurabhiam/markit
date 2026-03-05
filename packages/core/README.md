@@ -1,19 +1,19 @@
-# @markit/core
+# @markitjs/core
 
-Framework-agnostic, high-performance text highlighting engine. Serves as the foundation for `@markit/react` and `@markit/angular`.
+Framework-agnostic, high-performance text highlighting engine. Serves as the foundation for `@markitjs/react` and `@markitjs/angular`.
 
 ## Install
 
 ```bash
-npm install @markit/core
+npm install @markitjs/core
 # or
-bun add @markit/core
+bun add @markitjs/core
 ```
 
 ## Quick Start
 
 ```ts
-import { markit } from '@markit/core';
+import { markit } from '@markitjs/core';
 
 const instance = markit(document.querySelector('#content'));
 
@@ -79,7 +79,7 @@ instance.mark('search term', {
 ## Plugins
 
 ```ts
-import { markit, type MarkitPlugin } from '@markit/core';
+import { markit, type MarkitPlugin } from '@markitjs/core';
 
 const logger: MarkitPlugin = {
   name: 'logger',

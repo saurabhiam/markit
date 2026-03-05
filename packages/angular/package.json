@@ -1,7 +1,7 @@
 {
-  "name": "@markit/angular",
+  "name": "@markitjs/angular",
   "version": "0.0.1",
-  "description": "Angular bindings for @markit/core text highlighting engine",
+  "description": "Angular bindings for @markitjs/core text highlighting engine",
   "type": "module",
   "files": [
     "dist"
@@ -17,12 +17,12 @@
     "tslib": "^2.8.1"
   },
   "peerDependencies": {
-    "@markit/core": ">=0.0.1",
+    "@markitjs/core": ">=0.0.1",
     "@angular/core": "^17.0.0 || ^18.0.0 || ^19.0.0",
     "@angular/common": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "@markit/core": "workspace:*",
+    "@markitjs/core": "workspace:*",
     "@analogjs/vite-plugin-angular": "^1",
     "@analogjs/vitest-angular": "^1",
     "@angular/build": "^19",

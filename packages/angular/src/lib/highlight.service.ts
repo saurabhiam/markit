@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
-import { markit } from '@markit/core';
-import type { MarkitInstance, MarkitOptions, MarkitPlugin } from '@markit/core';
+import { markit } from '@markitjs/core';
+import type { MarkitInstance, MarkitOptions, MarkitPlugin } from '@markitjs/core';
 
 /**
  * Injectable service for programmatic text highlighting.

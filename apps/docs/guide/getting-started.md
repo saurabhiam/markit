@@ -7,15 +7,15 @@ MarkIt is a high-performance text highlighting library for the modern web. It re
 ::: code-group
 
 ```bash [npm]
-npm install @markit/core
+npm install @markitjs/core
 ```
 
 ```bash [bun]
-bun add @markit/core
+bun add @markitjs/core
 ```
 
 ```bash [pnpm]
-pnpm add @markit/core
+pnpm add @markitjs/core
 ```
 
 :::
@@ -24,16 +24,16 @@ For framework-specific wrappers:
 
 ```bash
 # React / Next.js
-npm install @markit/react
+npm install @markitjs/react
 
 # Angular
-npm install @markit/angular @markit/core
+npm install @markitjs/angular @markitjs/core
 ```
 
 ## Quick Start (Vanilla JS)
 
 ```typescript
-import { markit } from '@markit/core';
+import { markit } from '@markitjs/core';
 
 const container = document.getElementById('content');
 const instance = markit(container);

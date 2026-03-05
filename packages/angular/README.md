@@ -1,13 +1,13 @@
-# @markit/angular
+# @markitjs/angular
 
-Angular bindings for the [@markit/core](https://github.com/saurabhiam/markit/tree/main/packages/core) text highlighting engine. Provides a standalone `MarkitHighlightDirective` and an injectable `MarkitService`.
+Angular bindings for the [@markitjs/core](https://github.com/saurabhiam/markit/tree/main/packages/core) text highlighting engine. Provides a standalone `MarkitHighlightDirective` and an injectable `MarkitService`.
 
 ## Install
 
 ```bash
-npm install @markit/angular @markit/core
+npm install @markitjs/angular @markitjs/core
 # or
-bun add @markit/angular @markit/core
+bun add @markitjs/angular @markitjs/core
 ```
 
 **Peer dependencies:** Angular 17, 18, or 19
@@ -20,7 +20,7 @@ Import the standalone directive in your component:
 
 ```typescript
 import { Component } from '@angular/core';
-import { MarkitHighlightDirective } from '@markit/angular';
+import { MarkitHighlightDirective } from '@markitjs/angular';
 
 @Component({
   selector: 'app-search',
@@ -48,8 +48,8 @@ For programmatic control, inject `MarkitService`:
 
 ```typescript
 import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MarkitService } from '@markit/angular';
-import type { MarkitInstance } from '@markit/core';
+import { MarkitService } from '@markitjs/angular';
+import type { MarkitInstance } from '@markitjs/core';
 
 @Component({
   selector: 'app-editor',
@@ -90,7 +90,7 @@ Standalone attribute directive. Apply to any element whose text content you want
 | Input             | Type                     | Description                                           |
 | ----------------- | ------------------------ | ----------------------------------------------------- |
 | `markitHighlight` | `string \| string[]`     | Search term(s) to highlight                           |
-| `markitOptions`   | `Partial<MarkitOptions>` | All `@markit/core` options (renderer, accuracy, etc.) |
+| `markitOptions`   | `Partial<MarkitOptions>` | All `@markitjs/core` options (renderer, accuracy, etc.) |
 | `markitPlugins`   | `MarkitPlugin[]`         | Plugins to register                                   |
 
 ### `MarkitService`
