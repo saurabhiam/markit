@@ -68,7 +68,7 @@ jobs:
               if (release.draft) {
                 console.log(`Found draft release for ${tagName}, ready to publish`);
               } else {
-                console.log(`Found published release for ${tagName}, will update`);
+                console.log(`Found published release for ${tagName}, will skip the publishing`);
               }
             }
 
@@ -110,7 +110,19 @@ jobs:
       - name: Verify @markitjs/react ESM
         run: node --input-type=module -e "import './packages/react/dist/index.js'"
 
+      - name: Check if version already on npm
+        id: check_npm
+        run: |
+          VERSION="${{ inputs.version }}"
+          if npm view @markitjs/core@$VERSION version 2>/dev/null; then
+            echo "published=true" >> $GITHUB_OUTPUT
+            echo "Version $VERSION is already on npm, skipping npm publish"
+          else
+            echo "published=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish to npm
+        if: steps.check_npm.outputs.published != 'true'
         run: bunx changeset publish --no-git-tag
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -123,17 +135,28 @@ jobs:
           script: |
             const version = '${{ inputs.version }}';
             const packages = ['@markitjs/core', '@markitjs/react', '@markitjs/angular'];
+
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+
             for (const name of packages) {
               const tag = `${name}@${version}`;
-              const { data: release } = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag: tag,
-              });
+              const release = releases.find(r => r.tag_name === tag);
+              if (!release) {
+                throw new Error(`Draft release not found for ${tag}. Run Finalize Release first.`);
+              }
+              if (!release.draft) {
+                console.log(`Release ${tag} is already published, skipping`);
+                continue;
+              }
               await github.rest.repos.updateRelease({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 release_id: release.id,
                 draft: false,
               });
+              console.log(`Published release for ${tag}`);
             }
