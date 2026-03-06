@@ -46,8 +46,9 @@ bun run bench          # Run Playwright performance benchmarks
 2. Make your changes. Keep commits focused and descriptive.
 3. Run `bun run format` to auto-format.
 4. Run `bun run build && bun run test && bun run typecheck` to verify everything passes.
-5. Add a changeset (see below).
-6. Open a pull request against `main`.
+5. Open a pull request against `main`.
+
+You do **not** need to add a changeset. Releases are cut by maintainers using the Prepare Release and Publish Release workflows (see [RELEASING.md](RELEASING.md)).
 
 ## Commit messages
 
@@ -64,21 +65,7 @@ test: add edge case for nested highlights
 
 ## Changesets
 
-We use [Changesets](https://github.com/changesets/changesets) for versioning and changelogs.
-
-**Before opening a PR with user-facing changes**, run:
-
-```bash
-bunx changeset
-```
-
-This prompts you to:
-
-1. Select which package(s) changed.
-2. Choose the semver bump type (patch / minor / major).
-3. Write a summary of the change.
-
-A markdown file is created in `.changeset/` — commit it with your PR. CI will warn if a changeset is missing.
+Releases use [Changesets](https://github.com/changesets/changesets) under the hood, but **contributors do not run `bunx changeset`**. Maintainers (repo admins) run the **Prepare Release** workflow, which creates the changeset and bumps versions using GitHub-generated release notes. If you’re curious how versioning works, see [RELEASING.md](RELEASING.md).
 
 ## Pull Request Guidelines
 
@@ -110,13 +97,13 @@ markit/
 
 ## Releasing
 
-The release process is documented in [RELEASING.md](RELEASING.md). In short:
+Releases are documented in [RELEASING.md](RELEASING.md). In short:
 
-1. Add a changeset to your PR with `bunx changeset`
-2. After merge, a bot opens a "Version Packages" PR with bumped versions and changelogs
-3. When a maintainer merges that PR, packages are published to npm automatically
+1. Maintainers merge PRs to `main` (no changesets in PRs).
+2. When ready to release, an **admin** runs the **Prepare Release** workflow (chooses patch / minor / major). It generates release notes, bumps versions, creates tags, and draft GitHub Releases.
+3. The same admin runs the **Publish Release** workflow with the version number. It runs tests, publishes to npm, and publishes the GitHub Releases.
 
-Contributors only need to worry about step 1 — the rest is handled by automation.
+Contributors only need to merge their PRs — the rest is done by maintainers via the two workflows.
 
 ## Questions?
 
