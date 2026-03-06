@@ -25,6 +25,7 @@ There is no "Version PR" — you never run `bunx changeset` in PRs. Prepare crea
 - **GitHub:** Only users with **admin** role on the repo can run Prepare, Finalize, Publish, and Rollback workflows.
 - **npm:** An npm account, the `@markitjs` scope, and a Granular Access Token (write, bypass 2FA). Store it in a GitHub Environment secret (see [npm Setup](#npm-setup) below).
 - **GitHub Environment:** Create an environment named `npm-publish` with the `NPM_TOKEN` secret. The Publish and Rollback workflows use it.
+- **Repository secret DRAFT_RELEASE_PAT:** A GitHub Personal Access Token with **read and write** access to repository releases. The Publish Release (and Test Publish Release) workflows use it to list and publish draft releases; GitHub's default token does not return drafts. Add it under **Settings → Secrets and variables → Actions** (repository secrets, not environment).
 
 ---
 
@@ -216,6 +217,8 @@ The version you entered doesn't match the version in `packages/core/package.json
 
 You entered a version that wasn't finalized. Run **Finalize Release** first (after merging the release PR), then run **Publish Release** with the version that Finalize produced (check the Finalize run output or the draft releases).
 
+If draft releases exist but Publish still fails with "version has not been finalized", ensure the **DRAFT_RELEASE_PAT** repository secret is set and has read+write permission for releases (GitHub's default token does not see drafts).
+
 ### Publish failed (tests, build, npm)
 
 1. Check the [Actions](https://github.com/saurabhiam/markit/actions) run for the failing step.
@@ -233,6 +236,7 @@ Use **Rollback** with that version. It will unpublish (if within 72 hours) or de
 Before the first publish:
 
 - [ ] npm org `@markitjs` exists, token created, `NPM_TOKEN` in GitHub Environment `npm-publish`
+- [ ] `DRAFT_RELEASE_PAT` added in repo Secrets (read+write releases)
 - [ ] `.changeset/config.json` has the fixed group and ignore list
 
 To do the first release:
