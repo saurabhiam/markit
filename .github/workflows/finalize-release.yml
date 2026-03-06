@@ -143,12 +143,32 @@ jobs:
             try {
               body = fs.readFileSync('release-notes-body.md', 'utf8');
             } catch (_) {}
+
+            // Get existing releases
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+
             for (const pkgVersion of list) {
               const lastAt = pkgVersion.lastIndexOf('@');
               const name = pkgVersion.slice(0, lastAt);
               const version = pkgVersion.slice(lastAt + 1);
               const tag = pkgVersion;
               const pkgDir = name.replace('@markitjs/', '');
+
+              // Check if release already exists
+              const existingRelease = releases.find(r => r.tag_name === tag);
+              if (existingRelease) {
+                if (existingRelease.draft) {
+                  console.log(`Draft release for ${tag} already exists, skipping`);
+                } else {
+                  console.log(`Published release for ${tag} already exists, skipping`);
+                }
+                continue;
+              }
+
               await github.rest.repos.createRelease({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -158,4 +178,5 @@ jobs:
                 draft: true,
                 prerelease: version.includes('-'),
               });
+              console.log(`Created draft release for ${tag}`);
             }
