@@ -1,0 +1,81 @@
+name: Test Publish Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to test (e.g. 1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check version format
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "Invalid version format: $VERSION"
+            exit 1
+          fi
+          echo "Version format is valid: $VERSION"
+
+      - name: Check git tags
+        run: |
+          VERSION="${{ inputs.version }}"
+          echo "Checking for tags with version $VERSION..."
+          for pkg in core react angular; do
+            TAG="@markitjs/${pkg}@${VERSION}"
+            echo "Checking tag: $TAG"
+            if git ls-remote --tags origin "$TAG" 2>/dev/null | grep -q .; then
+              echo "  ✓ Tag exists: $TAG"
+            else
+              echo "  ✗ Tag NOT found: $TAG"
+            fi
+          done
+
+      - name: Check releases via GitHub API
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ inputs.version }}';
+            const packages = ['@markitjs/core', '@markitjs/react', '@markitjs/angular'];
+
+            console.log('Checking releases for version:', version);
+
+            // List all releases
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+
+            console.log('Total releases found:', releases.length);
+
+            for (const pkg of packages) {
+              const tagName = `${pkg}@${version}`;
+              const release = releases.find(r => r.tag_name === tagName);
+              
+              if (release) {
+                console.log(`✓ Release found for ${tagName}:`);
+                console.log(`  - draft: ${release.draft}`);
+                console.log(`  - published: ${!release.draft}`);
+                console.log(`  - html_url: ${release.html_url}`);
+              } else {
+                console.log(`✗ No release found for ${tagName}`);
+              }
+            }
+
+            // Also list all unique tags
+            console.log('\nAll release tags:');
+            for (const r of releases) {
+              console.log(`  - ${r.tag_name} (draft: ${r.draft})`);
+            }
+
+      - name: Summary
+        run: |
+          echo "Test complete. Check logs above for results."
