@@ -223,13 +223,13 @@ To do the first release:
 
 ## Workflow reference
 
-| Workflow          | File                                      | Trigger              | Purpose                                      |
-| ----------------- | ----------------------------------------- | -------------------- | -------------------------------------------- |
-| Prepare Release   | `.github/workflows/prepare-release.yml`   | Manual (admin only)  | release_type → changeset, version, tags, drafts |
-| Publish Release   | `.github/workflows/publish-release.yml`   | Manual (admin only)  | version → test, build, npm publish, publish releases |
-| Rollback          | `.github/workflows/rollback.yml`          | Manual (admin only)  | version → delete releases/tags, unpublish/deprecate, revert |
-| CI                | `.github/workflows/ci.yml`                | Push/PR to `main`    | Build, test, typecheck, format                |
-| Prerelease        | `.github/workflows/prerelease.yml`        | Push to `next`       | Prerelease version + publish                 |
-| Docs              | `.github/workflows/docs.yml`              | Push to `main`       | Build and deploy documentation               |
-| Bundle Size       | `.github/workflows/bundle-size.yml`       | PR to `main`         | Measure bundle sizes                         |
-| Dependency Review | `.github/workflows/dependency-review.yml` | PR to `main`         | Block vulnerable dependencies                |
+| Workflow          | File                                      | Trigger             | Purpose                                                     |
+| ----------------- | ----------------------------------------- | ------------------- | ----------------------------------------------------------- |
+| Prepare Release   | `.github/workflows/prepare-release.yml`   | Manual (admin only) | release_type → changeset, version, tags, drafts             |
+| Publish Release   | `.github/workflows/publish-release.yml`   | Manual (admin only) | version → test, build, npm publish, publish releases        |
+| Rollback          | `.github/workflows/rollback.yml`          | Manual (admin only) | version → delete releases/tags, unpublish/deprecate, revert |
+| CI                | `.github/workflows/ci.yml`                | Push/PR to `main`   | Build, test, typecheck, format                              |
+| Prerelease        | `.github/workflows/prerelease.yml`        | Push to `next`      | Prerelease version + publish                                |
+| Docs              | `.github/workflows/docs.yml`              | Push to `main`      | Build and deploy documentation                              |
+| Bundle Size       | `.github/workflows/bundle-size.yml`       | PR to `main`        | Measure bundle sizes                                        |
+| Dependency Review | `.github/workflows/dependency-review.yml` | PR to `main`        | Block vulnerable dependencies                               |
