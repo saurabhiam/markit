@@ -1,5 +1,8 @@
 name: Publish Release
 
+# Requires repo secret DRAFT_RELEASE_PAT (PAT with read+write on releases) for listing
+# and publishing draft releases. GITHUB_TOKEN does not return drafts from the API.
+
 on:
   workflow_dispatch:
     inputs:
@@ -38,6 +41,7 @@ jobs:
         id: validate
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.DRAFT_RELEASE_PAT }}
           script: |
             const version = '${{ inputs.version }}';
             if (!/^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$/.test(version)) {
@@ -115,6 +119,7 @@ jobs:
       - name: Publish draft GitHub Releases
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.DRAFT_RELEASE_PAT }}
           script: |
             const version = '${{ inputs.version }}';
             const packages = ['@markitjs/core', '@markitjs/react', '@markitjs/angular'];
