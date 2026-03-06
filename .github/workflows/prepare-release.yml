@@ -80,17 +80,16 @@ jobs:
             const nextVersion = '${{ steps.version.outputs.next }}';
             const tagName = `@markitjs/core@${nextVersion}`;
             const previousTag = '${{ steps.previous_tag.outputs.tag }}';
-            const body = previousTag
+            const params = previousTag
               ? { tag_name: tagName, previous_tag_name: previousTag, target_commitish: 'main' }
               : { tag_name: tagName, target_commitish: 'main' };
             const { data } = await github.rest.repos.generateReleaseNotes({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              requestBody: body,
+              ...params,
             });
             const fs = require('fs');
             fs.writeFileSync('release-notes-body.md', data.body || '');
-            core.setOutput('name', data.name || `Release ${nextVersion}`);
 
       - name: Create changeset file
         run: |
