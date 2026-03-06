@@ -1,0 +1,166 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to roll back (e.g. 1.0.0)'
+        required: true
+        type: string
+      confirm_rollback:
+        description: 'Set to "true" or the version to confirm rollback'
+        required: false
+        type: string
+
+concurrency:
+  group: rollback-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      - name: Check actor is admin
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.actor,
+            });
+            if (data.permission !== 'admin') {
+              throw new Error(`Only repo admins can run Rollback. Current permission: ${data.permission}`);
+            }
+
+      - name: Require confirmation
+        run: |
+          CONFIRM="${{ inputs.confirm_rollback }}"
+          VERSION="${{ inputs.version }}"
+          if [ -z "$CONFIRM" ] || [ "$CONFIRM" != "true" ] && [ "$CONFIRM" != "$VERSION" ]; then
+            echo "::error::Set confirm_rollback to 'true' or to the version ($VERSION) to confirm rollback."
+            exit 1
+          fi
+
+      - name: Validate version
+        id: validate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ inputs.version }}';
+            if (!/^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$/.test(version)) {
+              core.setFailed('Invalid version format. Use semver (e.g. 1.0.0).');
+              return;
+            }
+            const tag = `@markitjs/core@${version}`;
+            try {
+              await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: tag,
+              });
+            } catch (err) {
+              if (err.status === 404) {
+                core.setFailed(`No release found for version ${version}.`);
+              } else {
+                throw err;
+              }
+            }
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete GitHub Releases
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ inputs.version }}';
+            const packages = ['@markitjs/core', '@markitjs/react', '@markitjs/angular'];
+            for (const name of packages) {
+              const tag = `${name}@${version}`;
+              try {
+                const { data: release } = await github.rest.repos.getReleaseByTag({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  tag: tag,
+                });
+                await github.rest.repos.deleteRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.id,
+                });
+              } catch (err) {
+                if (err.status !== 404) throw err;
+              }
+            }
+
+      - name: Delete tags
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ inputs.version }}';
+            const packages = ['@markitjs/core', '@markitjs/react', '@markitjs/angular'];
+            for (const name of packages) {
+              const tag = `${name}@${version}`;
+              try {
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `refs/tags/${tag}`,
+                });
+              } catch (err) {
+                if (err.status !== 404) throw err;
+              }
+            }
+
+      - name: Unpublish or deprecate on npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Unpublish or deprecate each package
+        run: |
+          V="${{ inputs.version }}"
+          for pkg in @markitjs/core @markitjs/react @markitjs/angular; do
+            if npm unpublish "${pkg}@${V}" --force 2>/dev/null; then
+              echo "Unpublished ${pkg}@${V}"
+            else
+              npm deprecate "${pkg}@${V}" "Rolled back. Use a different version." || true
+              echo "Deprecated ${pkg}@${V}"
+            fi
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Find and revert version commit
+        id: revert
+        run: |
+          V="${{ inputs.version }}"
+          COMMIT=$(git log main --oneline -100 -- packages/core/package.json | while read hash msg; do
+            if git show "$hash:packages/core/package.json" 2>/dev/null | grep -q "\"version\": \"$V\""; then
+              echo "$hash"
+              break
+            fi
+          done)
+          if [ -z "$COMMIT" ]; then
+            echo "::warning::Could not find commit that set version to $V. Skipping revert."
+            echo "commit=" >> $GITHUB_OUTPUT
+          else
+            echo "commit=$COMMIT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Revert commit and push
+        if: steps.revert.outputs.commit != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git pull origin main
+          git revert ${{ steps.revert.outputs.commit }} --no-edit
+          git push origin main

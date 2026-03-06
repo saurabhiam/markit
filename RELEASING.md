@@ -1,29 +1,35 @@
 # Releasing
 
-This guide covers the complete release process for MarkIt. It is intended for maintainers with npm publish access.
+This guide covers the release process for MarkIt. It is intended for maintainers with npm publish access.
 
-For contributing changes (including how to add changesets), see [CONTRIBUTING.md](CONTRIBUTING.md).
+For contributing (no changesets required in PRs), see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
 ## How It Works
 
-MarkIt uses [Changesets](https://github.com/changesets/changesets) for versioning and changelog generation, with GitHub Actions automating the publish pipeline.
+MarkIt uses [Changesets](https://github.com/changesets/changesets) for versioning and changelog generation. Releases are fully automated via two **manual** GitHub Actions runs — only repo **admins** can trigger them. Nothing runs automatically on push.
 
-The release process has two steps:
+**Two steps:**
 
-1. **Version PR** — When PRs with changesets merge to `main`, a bot opens (or updates) a "Version Packages" pull request that bumps versions and updates changelogs.
-2. **Publish** — When a maintainer merges the Version PR, the release workflow publishes all bumped packages to npm and creates GitHub Releases.
+1. **Prepare release** — You run the **Prepare Release** workflow, choose the release type (patch / minor / major). It generates release notes from GitHub (commits/PRs since last release), creates a changeset, bumps versions, updates changelogs, pushes to `main`, creates tags, and creates **draft** GitHub Releases.
+2. **Publish release** — When you’re ready to ship, you run the **Publish Release** workflow and enter the version (e.g. `1.0.0`). It runs tests, build, and pre-checks, publishes to npm, and publishes the draft GitHub Releases.
 
-This two-step model ensures a human always reviews version bumps and changelog entries before anything is published.
+There is no “Version PR” — you never run `bunx changeset` in PRs. Prepare creates the changeset when you run it.
+
+---
+
+## Prerequisites (one-time setup)
+
+- **GitHub:** Only users with **admin** role on the repo can run Prepare, Publish, and Rollback workflows.
+- **npm:** An npm account, the `@markitjs` scope, and a Granular Access Token (write, bypass 2FA). Store it in a GitHub Environment secret (see [npm Setup](#npm-setup) below).
+- **GitHub Environment:** Create an environment named `npm-publish` with the `NPM_TOKEN` secret. The Publish and Rollback workflows use it.
 
 ---
 
 ## Versioning Strategy
 
-All packages (`@markitjs/core`, `@markitjs/react`, `@markitjs/angular`) use **fixed versioning** — they always share the same version number. When any package gets a changeset, all three are bumped together.
-
-This is configured in `.changeset/config.json` via the `fixed` array.
+All packages (`@markitjs/core`, `@markitjs/react`, `@markitjs/angular`) use **fixed versioning** — they always share the same version number. This is configured in `.changeset/config.json` via the `fixed` array.
 
 ### Semantic Versioning
 
@@ -33,94 +39,102 @@ This is configured in `.changeset/config.json` via the `fixed` array.
 | Minor | New feature, backwards-compatible | `1.0.0 → 1.1.0` |
 | Major | Breaking change                   | `1.0.0 → 2.0.0` |
 
-### Pre-1.0
-
-While packages are at `0.x.y`, minor bumps may contain breaking changes. This is standard semver for pre-stable software.
+You choose the bump when you run **Prepare Release** (patch / minor / major).
 
 ---
 
-## Stable Release (Step by Step)
+## Stable Release (step by step)
 
-### 1. Add a changeset to your PR
+### 1. Merge PRs to main
 
-Before opening a PR with user-facing changes:
+Develop as usual. Open PRs, get them merged to `main`. **You do not add changesets** — no `bunx changeset` in PRs. CI still runs (build, test, typecheck, etc.).
 
-```bash
-bunx changeset
-```
+### 2. Prepare the release
 
-This prompts you to:
+When you’re ready to cut a release:
 
-- Select which packages changed (all are bumped together due to fixed versioning)
-- Choose the semver bump type (patch / minor / major)
-- Write a human-readable summary of the change
+1. Go to **GitHub → Actions**.
+2. Select the **Prepare Release** workflow.
+3. Click **Run workflow**.
+4. Choose **release_type**: `patch`, `minor`, or `major` (dropdown).
+5. Run the workflow.
 
-A `.changeset/<random-id>.md` file is created. Commit it with your PR.
+The workflow will:
 
-### 2. PR merges to main
+- Generate release notes using GitHub’s API (from commits/PRs since the last release).
+- Create a changeset with that summary and your chosen bump type.
+- Run `changeset version` (bump packages, update CHANGELOGs).
+- Commit and push to `main`.
+- Create git tags (`@markitjs/core@x.y.z`, etc.).
+- Create **draft** GitHub Releases (you can edit the draft body on GitHub if needed).
 
-CI validates: format, typecheck, build, test, bundle size, and changeset presence.
+If there’s nothing to release (e.g. no new commits since last tag), the run exits with a message and does nothing.
 
-After merge, the release workflow (`release.yml`) runs and the `changesets/action` detects pending changeset files. It opens (or updates) a pull request titled **"chore: version packages"**.
+### 3. Publish the release
 
-### 3. Review the Version PR
+When you’re happy with the draft and want to ship:
 
-The Version PR contains:
+1. Go to **GitHub → Actions**.
+2. Select the **Publish Release** workflow.
+3. Click **Run workflow**.
+4. Enter **version** (e.g. `1.0.0` — the version that Prepare just created).
+5. Run the workflow.
 
-- Version bumps in all `package.json` files
-- Updated `CHANGELOG.md` in each package directory
-- All `.changeset/*.md` files consumed
+The workflow will:
 
-If more PRs with changesets merge while the Version PR is open, it auto-updates to include them. The highest bump type wins (e.g., one patch + one minor = minor).
+- Check out the release at that version (by tag).
+- Run typecheck, build, test, and CJS/ESM checks.
+- Publish all three packages to npm.
+- Publish the draft GitHub Releases (they become visible on the Releases page).
 
-### 4. Merge the Version PR
+### 4. Verify
 
-This triggers the release workflow again. This time there are no pending changesets, so `changesets/action` runs `changeset publish`:
+- Check [npmjs.com/package/@markitjs/core](https://www.npmjs.com/package/@markitjs/core) for the new version.
+- Check the [Releases page](https://github.com/saurabhiam/markit/releases) for the new GitHub Releases.
 
-- Publishes all bumped packages to npm (under the `latest` tag)
-- Creates git tags (`@markitjs/core@x.y.z`, `@markitjs/react@x.y.z`, `@markitjs/angular@x.y.z`)
-- Creates GitHub Releases with links to changelogs and npm
+---
 
-### 5. Verify
+## When to use Rollback
 
-- Check [npmjs.com/package/@markitjs/core](https://www.npmjs.com/package/@markitjs/core) for the new version
-- Check the [Releases page](https://github.com/saurabhiam/markit/releases) for GitHub Releases
-- Documentation auto-deploys to GitHub Pages on the same `main` push
+Use the **Rollback** workflow when you need to undo a release (e.g. bad publish, wrong version).
+
+1. Go to **GitHub → Actions** → **Rollback**.
+2. Click **Run workflow**.
+3. Enter **version** (e.g. `1.0.0`) to roll back.
+4. Optionally set **confirm_rollback** (e.g. `true` or the version again) so the job doesn’t fail with “Set confirm_rollback to confirm.”
+5. Run the workflow.
+
+The workflow will:
+
+- Validate that the version exists (semver + at least one release/tag).
+- Delete the GitHub Releases for that version.
+- Delete the git tags.
+- Unpublish the packages from npm (or deprecate them if unpublish is no longer allowed, e.g. after 72 hours).
+- Revert the “chore: version packages” commit on `main`.
+
+Only repo admins can run Rollback.
 
 ---
 
 ## Prerelease (Alpha / Beta / RC)
 
-Prereleases allow publishing unstable versions for testing without affecting the `latest` npm tag.
+Prereleases allow publishing unstable versions without affecting the `latest` npm tag. The **Prerelease** workflow (if enabled) runs on push to `next`.
 
 ### Enter prerelease mode
 
 ```bash
 git checkout -b next main
-
-# Choose the prerelease type: alpha, beta, or rc
-bunx changeset pre enter beta
-
+bunx changeset pre enter beta   # or alpha, rc
 git add .changeset/pre.json
 git commit -m "chore: enter beta prerelease mode"
 git push -u origin next
 ```
 
-### Develop on the next branch
+### Develop on next
 
-Work normally — create PRs targeting `next`, add changesets. When PRs merge to `next`, the prerelease workflow (`prerelease.yml`) handles versioning and publishing automatically.
+Create PRs targeting `next`. When they merge, the prerelease workflow handles versioning and publishing. Versions look like `1.0.0-beta.0`, `1.0.0-beta.1`, etc.
 
-Published versions look like: `1.0.0-beta.0`, `1.0.0-beta.1`, etc.
-
-### npm dist-tags for prereleases
-
-| Prerelease type | npm tag | Install command                    |
-| --------------- | ------- | ---------------------------------- |
-| `alpha`         | `alpha` | `npm install @markitjs/core@alpha` |
-| `beta`          | `beta`  | `npm install @markitjs/core@beta`  |
-| `rc`            | `next`  | `npm install @markitjs/core@next`  |
-
-### Exit prerelease mode and go stable
+### Exit prerelease mode
 
 ```bash
 bunx changeset pre exit
@@ -128,7 +142,7 @@ git add .changeset/pre.json
 git commit -m "chore: exit prerelease mode"
 ```
 
-Merge the `next` branch back to `main` via a PR. The next release from `main` will be a stable version.
+Merge `next` back to `main` via a PR when you’re ready for the next stable release.
 
 ---
 
@@ -142,211 +156,80 @@ Merge the `next` branch back to `main` via a PR. The next release from `main` wi
 
 ### Token creation
 
-As of November 2025, npm only supports **Granular Access Tokens**. Write-enabled tokens have a **maximum expiration of 90 days**.
+npm supports **Granular Access Tokens** with a maximum expiration of 90 days for write tokens.
 
-1. Go to [npmjs.com](https://www.npmjs.com) → click your avatar → **Access Tokens**
-2. Click **Generate New Token** (Granular Access Token is the only option)
-3. Configure:
+1. Go to [npmjs.com](https://www.npmjs.com) → avatar → **Access Tokens**
+2. **Generate New Token** (Granular Access Token)
+3. Configure: name, **Packages and scopes** → Read and write for `@markitjs`, **Bypass two-factor authentication** checked (required for CI), expiration 90 days.
+4. Copy the token — it is shown only once.
 
-| Field                                | Value                                             |
-| ------------------------------------ | ------------------------------------------------- |
-| **Token name**                       | `github-actions-markitjs`                         |
-| **Description**                      | `CI/CD publishing from GitHub Actions`            |
-| **Bypass two-factor authentication** | Checked (required for CI — no human to enter 2FA) |
-| **Allowed IP Ranges**                | Leave blank (GitHub Actions IPs rotate)           |
-| **Expiration**                       | 90 days (maximum allowed for write tokens)        |
-| **Packages and scopes**              | Read and write, scoped to `@markitjs`             |
-| **Organizations**                    | `markitjs` → Read and write                       |
+### GitHub Environment
 
-4. Click **Generate Token**
-5. **Copy the token immediately** — it is shown only once
+1. Repo → **Settings** → **Environments** → **New environment** → name: `npm-publish`
+2. Add protection rules if desired (e.g. required reviewers, deployment branches: `main`, `next`).
+3. **Environment secrets** → **Add secret** → Name: `NPM_TOKEN`, Value: the npm token.
 
-### GitHub Environment setup
+The **Publish Release** and **Rollback** workflows use the `npm-publish` environment so they have access to `NPM_TOKEN`.
 
-The release workflow uses a GitHub Environment called `npm-publish` for protection:
+### Token rotation (every ~80 days)
 
-1. Go to the repository → **Settings** → **Environments** → **New environment**
-2. Name: `npm-publish`
-3. Configure protection rules:
+Set a calendar reminder. Before the token expires:
 
-| Setting                 | Value                             | Why                                          |
-| ----------------------- | --------------------------------- | -------------------------------------------- |
-| **Required reviewers**  | Add maintainer(s)                 | Every publish requires human approval        |
-| **Prevent self-review** | Unchecked (for solo maintainers)  | You need to approve your own releases        |
-| **Wait timer**          | 0                                 | No delay needed                              |
-| **Deployment branches** | Selected branches: `main`, `next` | Only release/prerelease branches can publish |
+1. Generate a new token on npm (same settings).
+2. Update `NPM_TOKEN` in the GitHub `npm-publish` environment.
+3. Delete the old token on npm.
 
-4. Under **Environment secrets** → **Add secret**:
-   - Name: `NPM_TOKEN`
-   - Value: the token from the step above
-
-Environment secrets are more secure than repository-level secrets — they are only exposed to workflows that reference the `npm-publish` environment.
-
-The release workflow uses `actions/setup-node` with `registry-url` to configure npm authentication at runtime. No `.npmrc` file is needed in the repository.
-
-### Token rotation (every 80 days)
-
-npm write tokens expire after 90 days. Set a **calendar reminder for 80 days** after each token creation.
-
-**Rotation procedure:**
-
-1. Go to [npmjs.com](https://www.npmjs.com) → Access Tokens → **Generate New Token** (same settings as above)
-2. Go to GitHub → Settings → Environments → `npm-publish` → update the `NPM_TOKEN` secret with the new token
-3. Go back to npmjs.com → **delete the old token**
-4. Set a new 80-day calendar reminder
-
-**If the token expires before rotation:**
-
-- The release workflow will fail at the publish step with an authentication error
-- No packages will be published (safe failure — nothing breaks)
-- Generate a new token, update the secret, and re-run the workflow manually via `workflow_dispatch`
+If the token expires, the Publish workflow will fail at the npm step; fix the secret and re-run.
 
 ---
 
 ## Troubleshooting
 
-### Version PR not appearing
+### Prepare: “No changes to release”
 
-The `changesets/action` only creates a Version PR when `.changeset/*.md` files exist (excluding `README.md`). Verify:
+The workflow found no new commits (or no diff) since the last release. Merge more PRs to `main` and run Prepare again, or confirm the last tag is what you expect.
 
-```bash
-ls .changeset/*.md
-```
+### Publish: version not found
 
-If no files exist, no changeset was added. Run `bunx changeset` to create one.
+You entered a version that wasn’t prepared. Run **Prepare Release** first, then run **Publish Release** with the version that Prepare produced (check the Prepare run output or the draft releases).
 
-### Publish failed
+### Publish failed (tests, build, npm)
 
-1. Check the [Actions tab](https://github.com/saurabhiam/markit/actions/workflows/release.yml) for the failed run
-2. Common causes:
-   - **npm token expired** (most common): Rotate the token — see [Token rotation](#token-rotation-every-80-days) above
-   - **Build failure**: Fix the build, the next push to `main` will re-trigger
-   - **Package name conflict**: Ensure the `@markitjs` scope is available on npm
-   - **2FA prompt**: Ensure the token was created with "Bypass two-factor authentication" checked
-3. After fixing, re-run the release workflow manually via `workflow_dispatch`
-
-### npm token expired
-
-Symptoms: publish step fails with `401 Unauthorized` or `ENEEDAUTH`.
-
-Fix: Generate a new token on npmjs.com, update `NPM_TOKEN` in the `npm-publish` GitHub Environment, re-run the workflow. See [Token rotation](#token-rotation-every-80-days).
-
-### Version PR has wrong bump level
-
-Edit the changeset `.md` files before merging the Version PR. Or close the Version PR, update the changesets on `main`, and let the bot create a new one.
-
-### Stuck Version PR
-
-If the Version PR gets stale or conflicts:
-
-1. Close the existing Version PR
-2. Manually trigger the release workflow via Actions → Release → Run workflow
-3. The action will create a fresh Version PR
+1. Check the [Actions](https://github.com/saurabhiam/markit/actions) run for the failing step.
+2. Common causes: npm token expired (rotate and update `NPM_TOKEN`), build/test failure (fix on `main` and re-run Publish).
+3. Re-run the **Publish Release** workflow after fixing.
 
 ### Accidentally published a bad version
 
-npm packages cannot be unpublished after 72 hours. Instead, deprecate:
-
-```bash
-npm deprecate @markitjs/core@1.2.3 "This version has a critical bug. Please use 1.2.4."
-npm deprecate @markitjs/react@1.2.3 "This version has a critical bug. Please use 1.2.4."
-npm deprecate @markitjs/angular@1.2.3 "This version has a critical bug. Please use 1.2.4."
-```
-
-Then publish a patch fix as quickly as possible.
-
-Within 72 hours, you can unpublish:
-
-```bash
-npm unpublish @markitjs/core@1.2.3
-```
+Use **Rollback** with that version. It will unpublish (if within 72 hours) or deprecate on npm, delete releases and tags, and revert the version commit. After 72 hours, npm only allows deprecation, not unpublish.
 
 ---
 
-## First Release (One-Time Setup)
+## First release (one-time)
 
-Before the very first publish, verify these prerequisites:
+Before the first publish:
 
-```
-[ ] npm organization @markitjs exists on npmjs.com
-[ ] npm Granular Access Token created (write, @markitjs scope, bypass 2FA)
-[ ] GitHub Environment npm-publish created with NPM_TOKEN secret
-[ ] GitHub Environment has required reviewers and branch restrictions
-[ ] All three packages have correct names in package.json (@markitjs/core, @markitjs/react, @markitjs/angular)
-[ ] .changeset/config.json has the fixed group and ignore list configured
-```
+- [ ] npm org `@markitjs` exists, token created, `NPM_TOKEN` in GitHub Environment `npm-publish`
+- [ ] `.changeset/config.json` has the fixed group and ignore list
 
-To trigger the first release:
+To do the first release:
 
-1. Create a changeset: `bunx changeset` — select a package, choose the bump type (likely `minor` for first feature release), write a summary
-2. Commit and push to `main`
-3. The release workflow opens a "chore: version packages" PR
-4. Review the PR — verify versions and changelogs
-5. Merge it — packages publish to npm, tags and GitHub Releases are created
-6. Verify: `npm info @markitjs/core` should show the published version
+1. Merge at least one PR to `main` (or have commits since the repo start).
+2. Run **Prepare Release** with **release_type** = `minor` (or `major` for 1.0.0).
+3. Run **Publish Release** with the version shown (e.g. `0.1.0` or `1.0.0`).
+4. Verify on npm and the Releases page.
 
 ---
 
-## Hotfix Release
+## Workflow reference
 
-For critical fixes that need to ship immediately:
-
-1. Create a branch from `main`: `git checkout -b fix/critical-issue main`
-2. Fix the issue
-3. Add a changeset: `bunx changeset` (select `patch`)
-4. Open and merge PR to `main`
-5. The Version PR will appear — merge it immediately
-6. Packages publish automatically
-
----
-
-## Maintainer Checklist
-
-### Before merging a Version PR
-
-```
-[ ] CHANGELOG entries are accurate and describe user-facing impact
-[ ] Version bump level is correct (patch / minor / major)
-[ ] No unintended packages being bumped
-[ ] Breaking changes (if any) are clearly documented
-[ ] CI checks pass on the Version PR
-```
-
-### After publish (automated, but verify)
-
-```
-[ ] Packages visible on npmjs.com with correct version
-[ ] npm install @markitjs/core@<version> works
-[ ] GitHub Releases created with changelog links
-[ ] Documentation site updated (auto-deploys)
-```
-
-### Every 80 days (token rotation)
-
-```
-[ ] Generate a new npm token (90-day expiry, write access, @markitjs scope)
-[ ] Update NPM_TOKEN in GitHub Environment npm-publish
-[ ] Delete the old token on npmjs.com
-[ ] Set next 80-day calendar reminder
-```
-
-### Quarterly maintenance
-
-```
-[ ] GitHub Environment protection rules are still correct
-[ ] Review and clean up any stale prerelease tags on npm
-[ ] Verify npm org membership and permissions are current
-```
-
----
-
-## Workflow Files Reference
-
-| Workflow          | File                                      | Trigger                        | Purpose                                     |
-| ----------------- | ----------------------------------------- | ------------------------------ | ------------------------------------------- |
-| CI                | `.github/workflows/ci.yml`                | Push/PR to `main`              | Build, test, typecheck, format, node compat |
-| Release           | `.github/workflows/release.yml`           | Push to `main`, manual         | Version PR management + npm publish         |
-| Prerelease        | `.github/workflows/prerelease.yml`        | Push to `next`                 | Prerelease version management + publish     |
-| Docs              | `.github/workflows/docs.yml`              | Push to `main` (path-filtered) | Build and deploy documentation              |
-| Bundle Size       | `.github/workflows/bundle-size.yml`       | PR to `main`                   | Measure and report bundle sizes             |
-| Dependency Review | `.github/workflows/dependency-review.yml` | PR to `main`                   | Block vulnerable/problematic dependencies   |
+| Workflow          | File                                      | Trigger             | Purpose                                                     |
+| ----------------- | ----------------------------------------- | ------------------- | ----------------------------------------------------------- |
+| Prepare Release   | `.github/workflows/prepare-release.yml`   | Manual (admin only) | release_type → changeset, version, tags, drafts             |
+| Publish Release   | `.github/workflows/publish-release.yml`   | Manual (admin only) | version → test, build, npm publish, publish releases        |
+| Rollback          | `.github/workflows/rollback.yml`          | Manual (admin only) | version → delete releases/tags, unpublish/deprecate, revert |
+| CI                | `.github/workflows/ci.yml`                | Push/PR to `main`   | Build, test, typecheck, format                              |
+| Prerelease        | `.github/workflows/prerelease.yml`        | Push to `next`      | Prerelease version + publish                                |
+| Docs              | `.github/workflows/docs.yml`              | Push to `main`      | Build and deploy documentation                              |
+| Bundle Size       | `.github/workflows/bundle-size.yml`       | PR to `main`        | Measure bundle sizes                                        |
+| Dependency Review | `.github/workflows/dependency-review.yml` | PR to `main`        | Block vulnerable dependencies                               |

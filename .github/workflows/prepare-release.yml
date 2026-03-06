@@ -1,0 +1,182 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+concurrency:
+  group: prepare-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check actor is admin
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.actor,
+            });
+            if (data.permission !== 'admin') {
+              throw new Error(`Only repo admins can run Prepare Release. Current permission: ${data.permission}`);
+            }
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.10'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Get current version and compute next version
+        id: version
+        run: |
+          CURRENT=$(node -p "require('./packages/core/package.json').version")
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          IFS='.' read -r MAJ MIN PATCH <<< "$CURRENT"
+          case "${{ inputs.release_type }}" in
+            major) echo "next=$((MAJ + 1)).0.0" >> $GITHUB_OUTPUT ;;
+            minor) echo "next=${MAJ}.$((MIN + 1)).0" >> $GITHUB_OUTPUT ;;
+            patch) echo "next=${MAJ}.${MIN}.$((PATCH + 1))" >> $GITHUB_OUTPUT ;;
+            *) echo "next=${MAJ}.${MIN}.$((PATCH + 1))" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Get previous release tag
+        id: previous_tag
+        run: |
+          PREV=$(git tag -l '@markitjs/core@*' --sort=-v:refname | head -n1)
+          echo "tag=${PREV:-}" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: release_notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const nextVersion = '${{ steps.version.outputs.next }}';
+            const tagName = `@markitjs/core@${nextVersion}`;
+            const previousTag = '${{ steps.previous_tag.outputs.tag }}';
+            const body = previousTag
+              ? { tag_name: tagName, previous_tag_name: previousTag, target_commitish: 'main' }
+              : { tag_name: tagName, target_commitish: 'main' };
+            const { data } = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              requestBody: body,
+            });
+            const fs = require('fs');
+            fs.writeFileSync('release-notes-body.md', data.body || '');
+            core.setOutput('name', data.name || `Release ${nextVersion}`);
+
+      - name: Create changeset file
+        run: |
+          find .changeset -name '*.md' ! -name 'README.md' -delete 2>/dev/null || true
+          RT="${{ inputs.release_type }}"
+          ID=$(openssl rand -hex 4)
+          {
+            echo "---"
+            echo '"@markitjs/core": '"$RT"
+            echo '"@markitjs/react": '"$RT"
+            echo '"@markitjs/angular": '"$RT"
+            echo "---"
+            echo ""
+            cat release-notes-body.md
+          } > ".changeset/release-${ID}.md"
+
+      - name: Version packages
+        run: bunx changeset version
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet packages/core/package.json packages/react/package.json packages/angular/package.json 2>/dev/null; then
+            echo "No version or changelog changes. Nothing to release."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+
+      - name: Persist release list
+        if: steps.changes.outputs.has_changes == 'true'
+        id: release_list
+        run: |
+          for pkg in core react angular; do
+            name=$(node -p "require('./packages/$pkg/package.json').name")
+            version=$(node -p "require('./packages/$pkg/package.json').version")
+            echo "${name}@${version}"
+          done | jq -R -s -c 'split("\n") | map(select(length > 0))' > release-list.json
+          cat release-list.json
+
+      - name: Commit and push
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/core/package.json packages/react/package.json packages/angular/package.json \
+            packages/core/CHANGELOG.md packages/react/CHANGELOG.md packages/angular/CHANGELOG.md \
+            .changeset/
+          git status
+          git commit -m "chore: version packages" || exit 0
+          git push origin main
+
+      - name: Create and push tags
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          while IFS= read -r line; do
+            tag="${line}"
+            [ -z "$tag" ] && continue
+            git tag "$tag"
+            git push origin "$tag"
+          done < <(jq -r '.[]' release-list.json)
+
+      - name: Create draft GitHub Releases
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const list = JSON.parse(fs.readFileSync('release-list.json', 'utf8'));
+            let body = '';
+            try {
+              body = fs.readFileSync('release-notes-body.md', 'utf8');
+            } catch (_) {}
+            for (const pkgVersion of list) {
+              const lastAt = pkgVersion.lastIndexOf('@');
+              const name = pkgVersion.slice(0, lastAt);
+              const version = pkgVersion.slice(lastAt + 1);
+              const tag = pkgVersion;
+              const pkgDir = name.replace('@markitjs/', '');
+              await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name: `${name} v${version}`,
+                body: body || `See [CHANGELOG](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/packages/${pkgDir}/CHANGELOG.md) for details.`,
+                draft: true,
+                prerelease: version.includes('-'),
+              });
+            }
