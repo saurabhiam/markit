@@ -1,0 +1,161 @@
+name: Finalize Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to finalize (e.g. 1.0.0)'
+        required: true
+        type: string
+
+concurrency:
+  group: finalize-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check actor is admin
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.actor,
+            });
+            if (data.permission !== 'admin') {
+              throw new Error(`Only repo admins can run Finalize Release. Current permission: ${data.permission}`);
+            }
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Validate version on main
+        id: validate_version
+        run: |
+          CORE_VERSION=$(node -p "require('./packages/core/package.json').version")
+          REACT_VERSION=$(node -p "require('./packages/react/package.json').version")
+          ANGULAR_VERSION=$(node -p "require('./packages/angular/package.json').version")
+          INPUT_VERSION="${{ inputs.version }}"
+
+          if [ "$CORE_VERSION" != "$INPUT_VERSION" ]; then
+            echo "::error::Version $INPUT_VERSION not found on main. Expected $CORE_VERSION. Merge the release PR first."
+            exit 1
+          fi
+
+          echo "Validated: core=$CORE_VERSION react=$REACT_VERSION angular=$ANGULAR_VERSION"
+
+      - name: Check version not previously released
+        id: check_not_released
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ inputs.version }}';
+            const packages = ['core', 'react', 'angular'];
+
+            // Check git tags
+            const { execSync } = require('child_process');
+            for (const pkg of packages) {
+              const tag = `@markitjs/${pkg}@${version}`;
+              const tags = execSync(`git tag -l "${tag}"`).toString().trim();
+              if (tags) {
+                throw new Error(`Version ${tag} is already tagged. This version has already been released.`);
+              }
+            }
+
+            // Check GitHub releases
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+
+            for (const pkg of packages) {
+              const tagName = `@markitjs/${pkg}@${version}`;
+              const existingRelease = releases.find(r => r.tag_name === tagName);
+              if (existingRelease) {
+                throw new Error(`Release for ${tagName} already exists. This version has already been released.`);
+              }
+            }
+
+            console.log(`Version ${version} has not been released yet.`);
+
+      - name: Build release list
+        id: release_list
+        run: |
+          for pkg in core react angular; do
+            name=$(node -p "require('./packages/$pkg/package.json').name")
+            version=$(node -p "require('./packages/$pkg/package.json').version")
+            echo "${name}@${version}"
+          done | jq -R -s -c 'split("\n") | map(select(length > 0))' > release-list.json
+          cat release-list.json
+
+      - name: Create and push tags
+        run: |
+          while IFS= read -r line; do
+            tag="${line}"
+            [ -z "$tag" ] && continue
+            git tag "$tag"
+            git push origin "$tag"
+          done < <(jq -r '.[]' release-list.json)
+
+      - name: Generate release notes
+        id: release_notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const nextVersion = '${{ inputs.version }}';
+            const tagName = `@markitjs/core@${nextVersion}`;
+            const fs = require('fs');
+
+            // Get previous tag
+            const { data: tags } = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+            const previousTag = tags.find(t => t.name.startsWith('@markitjs/core@'))?.name;
+
+            const params = previousTag
+              ? { tag_name: tagName, previous_tag_name: previousTag, target_commitish: 'main' }
+              : { tag_name: tagName, target_commitish: 'main' };
+            const { data } = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ...params,
+            });
+            fs.writeFileSync('release-notes-body.md', data.body || '');
+
+      - name: Create draft GitHub Releases
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const list = JSON.parse(fs.readFileSync('release-list.json', 'utf8'));
+            let body = '';
+            try {
+              body = fs.readFileSync('release-notes-body.md', 'utf8');
+            } catch (_) {}
+            for (const pkgVersion of list) {
+              const lastAt = pkgVersion.lastIndexOf('@');
+              const name = pkgVersion.slice(0, lastAt);
+              const version = pkgVersion.slice(lastAt + 1);
+              const tag = pkgVersion;
+              const pkgDir = name.replace('@markitjs/', '');
+              await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name: `${name} v${version}`,
+                body: body || `See [CHANGELOG](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/packages/${pkgDir}/CHANGELOG.md) for details.`,
+                draft: true,
+                prerelease: version.includes('-'),
+              });
+            }
