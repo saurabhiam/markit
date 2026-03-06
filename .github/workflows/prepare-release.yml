@@ -118,64 +118,41 @@ jobs:
             exit 0
           fi
           echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "version=${{ steps.version.outputs.next }}" >> $GITHUB_OUTPUT
 
-      - name: Persist release list
-        if: steps.changes.outputs.has_changes == 'true'
-        id: release_list
-        run: |
-          for pkg in core react angular; do
-            name=$(node -p "require('./packages/$pkg/package.json').name")
-            version=$(node -p "require('./packages/$pkg/package.json').version")
-            echo "${name}@${version}"
-          done | jq -R -s -c 'split("\n") | map(select(length > 0))' > release-list.json
-          cat release-list.json
-
-      - name: Commit and push
+      - name: Create release branch and commit
         if: steps.changes.outputs.has_changes == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH="release/v${{ steps.version.outputs.next }}"
+          git checkout -b "$BRANCH"
           git add packages/core/package.json packages/react/package.json packages/angular/package.json \
             packages/core/CHANGELOG.md packages/react/CHANGELOG.md packages/angular/CHANGELOG.md \
             .changeset/
           git status
           git commit -m "chore: version packages" || exit 0
-          git push origin main
+          git push -u origin "$BRANCH"
 
-      - name: Create and push tags
+      - name: Open pull request
         if: steps.changes.outputs.has_changes == 'true'
-        run: |
-          while IFS= read -r line; do
-            tag="${line}"
-            [ -z "$tag" ] && continue
-            git tag "$tag"
-            git push origin "$tag"
-          done < <(jq -r '.[]' release-list.json)
-
-      - name: Create draft GitHub Releases
-        if: steps.changes.outputs.has_changes == 'true'
+        id: open_pr
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const list = JSON.parse(fs.readFileSync('release-list.json', 'utf8'));
+            const nextVersion = '${{ steps.version.outputs.next }}';
             let body = '';
             try {
               body = fs.readFileSync('release-notes-body.md', 'utf8');
             } catch (_) {}
-            for (const pkgVersion of list) {
-              const lastAt = pkgVersion.lastIndexOf('@');
-              const name = pkgVersion.slice(0, lastAt);
-              const version = pkgVersion.slice(lastAt + 1);
-              const tag = pkgVersion;
-              const pkgDir = name.replace('@markitjs/', '');
-              await github.rest.repos.createRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag_name: tag,
-                name: `${name} v${version}`,
-                body: body || `See [CHANGELOG](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/packages/${pkgDir}/CHANGELOG.md) for details.`,
-                draft: true,
-                prerelease: version.includes('-'),
-              });
-            }
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `release/v${nextVersion}`,
+              base: 'main',
+              title: `chore: release v${nextVersion}`,
+              body: body + '\n\n---\n\nAfter merging, run **Finalize Release** with version `' + nextVersion + '`.',
+            });
+            console.log(`PR created: ${pr.html_url}`);
+            core.setOutput('pr_url', pr.html_url);
