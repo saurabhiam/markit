@@ -4,9 +4,21 @@
 
 ## Installation
 
-```bash
-npm install @markitjs/core @markitjs/angular
+::: code-group
+
+```bash [npm]
+npm install @markitjs/angular
 ```
+
+```bash [bun]
+bun add @markitjs/angular
+```
+
+```bash [pnpm]
+pnpm add @markitjs/angular
+```
+
+:::
 
 ## Directive Usage
 

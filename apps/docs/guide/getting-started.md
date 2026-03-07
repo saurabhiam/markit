@@ -22,13 +22,41 @@ pnpm add @markitjs/core
 
 For framework-specific wrappers:
 
-```bash
-# React / Next.js
-npm install @markitjs/react
+**React / Next.js**
 
-# Angular
-npm install @markitjs/angular @markitjs/core
+::: code-group
+
+```bash [npm]
+npm install @markitjs/react
 ```
+
+```bash [bun]
+bun add @markitjs/react
+```
+
+```bash [pnpm]
+pnpm add @markitjs/react
+```
+
+:::
+
+**Angular**
+
+::: code-group
+
+```bash [npm]
+npm install @markitjs/angular
+```
+
+```bash [bun]
+bun add @markitjs/angular
+```
+
+```bash [pnpm]
+pnpm add @markitjs/angular
+```
+
+:::
 
 ## Quick Start (Vanilla JS)
 

@@ -4,9 +4,21 @@
 
 ## Installation
 
-```bash
+::: code-group
+
+```bash [npm]
 npm install @markitjs/react
 ```
+
+```bash [bun]
+bun add @markitjs/react
+```
+
+```bash [pnpm]
+pnpm add @markitjs/react
+```
+
+:::
 
 ## Hook Usage
 

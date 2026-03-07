@@ -5,9 +5,9 @@ Angular bindings for the [@markitjs/core](https://github.com/saurabhiam/markit/t
 ## Install
 
 ```bash
-npm install @markitjs/angular @markitjs/core
+npm install @markitjs/angular
 # or
-bun add @markitjs/angular @markitjs/core
+bun add @markitjs/angular
 ```
 
 **Peer dependencies:** Angular 17, 18, or 19
