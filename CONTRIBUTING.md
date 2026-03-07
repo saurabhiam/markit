@@ -37,7 +37,8 @@ bun run typecheck      # TypeScript type checking
 bun run format         # Auto-format with Prettier
 bun run format:check   # Verify formatting (used in CI)
 bun run docs:dev       # Start the docs site locally
-bun run bench          # Run Playwright performance benchmarks
+bun run bench          # Full Playwright performance benchmarks
+bun run e2e            # Playwright smoke tests (1K nodes; same as CI)
 ```
 
 ### Making changes
@@ -65,7 +66,7 @@ test: add edge case for nested highlights
 
 ## Changesets
 
-Releases use [Changesets](https://github.com/changesets/changesets) under the hood, but **contributors do not run `bunx changeset`**. Maintainers (repo admins) run the **Prepare Release** workflow, which creates the changeset and bumps versions using GitHub-generated release notes. If you’re curious how versioning works, see [RELEASING.md](RELEASING.md).
+Releases use [Changesets](https://github.com/changesets/changesets) under the hood, but **contributors do not run `bun run changeset`**. Maintainers (repo admins) run the **Prepare Release** workflow, which creates the changeset and bumps versions using GitHub-generated release notes. If you’re curious how versioning works, see [RELEASING.md](RELEASING.md).
 
 ## Pull Request Guidelines
 

@@ -25,6 +25,10 @@
     "e2e": {
       "dependsOn": ["^build"],
       "cache": false
+    },
+    "bench": {
+      "dependsOn": ["^build"],
+      "cache": false
     }
   }
 }

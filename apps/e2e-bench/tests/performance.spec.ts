@@ -1,6 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import * as fs from 'fs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 interface BenchResult {
   scenario: string;

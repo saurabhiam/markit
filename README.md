@@ -132,7 +132,7 @@ markit/
 ### Prerequisites
 
 - [Bun](https://bun.sh/) >= 1.3 (package manager & script runner)
-- Node.js >= 20 (required by Angular build tooling)
+- [Node.js](https://nodejs.org/) >= 20 (required by Angular build tooling)
 
 ### Setup
 
@@ -143,16 +143,17 @@ bun install
 
 ### Commands
 
-| Command              | Description                               |
-| -------------------- | ----------------------------------------- |
-| `bun run build`      | Build all packages                        |
-| `bun run test`       | Run all unit/integration tests (Vitest)   |
-| `bun run typecheck`  | TypeScript type checking                  |
-| `bun run dev`        | Dev mode with watch                       |
-| `bun run docs:dev`   | Start documentation dev server            |
-| `bun run docs:build` | Build documentation site                  |
-| `bun run bench`      | Run Playwright E2E performance benchmarks |
-| `bun run clean`      | Clean all build artifacts                 |
+| Command              | Description                                |
+| -------------------- | ------------------------------------------ |
+| `bun run build`      | Build all packages                         |
+| `bun run test`       | Run all unit/integration tests (Vitest)    |
+| `bun run typecheck`  | TypeScript type checking                   |
+| `bun run dev`        | Dev mode with watch                        |
+| `bun run docs:dev`   | Start documentation dev server             |
+| `bun run docs:build` | Build documentation site                   |
+| `bun run e2e`        | Run Playwright smoke tests (1K nodes; CI)  |
+| `bun run bench`      | Run full Playwright performance benchmarks |
+| `bun run clean`      | Clean all build artifacts                  |
 
 ### Testing
 
@@ -162,7 +163,10 @@ bun install
 bun run test
 ```
 
-**Real-browser performance benchmarks** (Playwright + Chromium, 1K–100K nodes):
+**Real-browser performance benchmarks** (Playwright + Chromium):
+
+- **Smoke tests** (1K nodes, used in CI): `bun run e2e`
+- **Full suite** (1K–100K nodes): `bun run bench`
 
 ```bash
 bun run bench

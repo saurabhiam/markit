@@ -94,8 +94,11 @@ instance.mark(term, { debug: true });
 Run the Playwright benchmark suite for real-browser performance numbers:
 
 ```bash
-cd apps/e2e-bench
-npx playwright test
+# From repo root (full benchmark suite)
+bun run bench
+
+# Or smoke tests only
+bun run e2e
 ```
 
 ### Typical Results (M1 MacBook, Chrome)

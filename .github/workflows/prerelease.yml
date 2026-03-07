@@ -44,11 +44,17 @@ jobs:
       - name: Test
         run: bun run test
 
+      - name: Install Playwright browsers
+        run: cd apps/e2e-bench && bun run playwright:install
+
+      - name: E2E (smoke)
+        run: bun run e2e
+
       - name: Publish prerelease
         uses: changesets/action@v1
         with:
-          publish: bunx changeset publish
-          version: bunx changeset version
+          publish: bun run publish-packages
+          version: bun run version-packages
           title: 'chore: version packages (prerelease)'
           commit: 'chore: version packages (prerelease)'
         env:
