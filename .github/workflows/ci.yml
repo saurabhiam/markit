@@ -43,6 +43,12 @@ jobs:
       - name: Test
         run: bun run test
 
+      - name: Install Playwright browsers
+        run: cd apps/e2e-bench && bun run playwright:install
+
+      - name: E2E (smoke)
+        run: bun run e2e
+
   node-compat:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -85,7 +91,7 @@ jobs:
         run: |
           CHANGESETS=$(find .changeset -name '*.md' ! -name 'README.md' 2>/dev/null | wc -l)
           if [ "$CHANGESETS" -eq 0 ]; then
-            echo "::warning::No changeset found. If this PR includes user-facing changes, run 'bunx changeset' to add one."
+            echo "No changeset in this PR (expected). Maintainers add changesets when running Prepare Release."
           else
             echo "Found $CHANGESETS changeset(s)."
           fi

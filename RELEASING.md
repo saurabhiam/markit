@@ -16,7 +16,7 @@ MarkIt uses [Changesets](https://github.com/changesets/changesets) for versionin
 2. **Finalize release** — After the release PR is merged (after CodeQL/checks pass), you run **Finalize Release** with the version (e.g. `1.0.0`). It validates the version on `main`, creates git tags, generates release notes, and creates **draft** GitHub Releases.
 3. **Publish release** — When you're ready to ship, you run the **Publish Release** workflow with the version. It runs tests, build, publishes to npm, and publishes the draft GitHub Releases.
 
-There is no "Version PR" — you never run `bunx changeset` in PRs. Prepare creates the changeset when you run it.
+There is no "Version PR" — you never run `bun run changeset` in PRs. Prepare creates the changeset when you run it.
 
 ---
 
@@ -49,7 +49,7 @@ You choose the bump when you run **Prepare Release** (patch / minor / major).
 
 ### 1. Merge PRs to main
 
-Develop as usual. Open PRs, get them merged to `main`. **You do not add changesets** — no `bunx changeset` in PRs. CI still runs (build, test, typecheck, etc.).
+Develop as usual. Open PRs, get them merged to `main`. **You do not add changesets** — no `bun run changeset` in PRs. CI still runs (build, test, typecheck, etc.).
 
 ### 2. Prepare the release
 
@@ -65,7 +65,7 @@ The workflow will:
 
 - Generate release notes using GitHub's API (from commits/PRs since the last release).
 - Create a changeset with that summary and your chosen bump type.
-- Run `changeset version` (bump packages, update CHANGELOGs).
+- Run `bun run version-packages` (bump packages, update CHANGELOGs).
 - Commit to a branch `release/vX.Y.Z` and push it.
 - Open a pull request to `main`.
 
@@ -144,7 +144,7 @@ Prereleases allow publishing unstable versions without affecting the `latest` np
 
 ```bash
 git checkout -b next main
-bunx changeset pre enter beta   # or alpha, rc
+bun run changeset -- pre enter beta   # or alpha, rc
 git add .changeset/pre.json
 git commit -m "chore: enter beta prerelease mode"
 git push -u origin next
@@ -157,7 +157,7 @@ Create PRs targeting `next`. When they merge, the prerelease workflow handles ve
 ### Exit prerelease mode
 
 ```bash
-bunx changeset pre exit
+bun run changeset -- pre exit
 git add .changeset/pre.json
 git commit -m "chore: exit prerelease mode"
 ```

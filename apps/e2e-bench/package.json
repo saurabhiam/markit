@@ -7,7 +7,8 @@
   "scripts": {
     "bench": "playwright test",
     "bench:headed": "playwright test --headed",
-    "serve": "npx serve public -l 3456 -s"
+    "e2e": "playwright test --grep \"1000 nodes\"",
+    "playwright:install": "playwright install chromium --with-deps"
   },
   "devDependencies": {
     "@playwright/test": "^1",

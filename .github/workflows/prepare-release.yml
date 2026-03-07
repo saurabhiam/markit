@@ -108,7 +108,7 @@ jobs:
           } > ".changeset/release-${ID}.md"
 
       - name: Version packages
-        run: bunx changeset version
+        run: bun run version-packages
 
       - name: Check for changes
         id: changes

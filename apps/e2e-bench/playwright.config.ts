@@ -1,4 +1,8 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { defineConfig } from '@playwright/test';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   testDir: './tests',
@@ -11,7 +15,8 @@ export default defineConfig({
     trace: 'off',
   },
   webServer: {
-    command: 'npx serve public -l 3456 -s',
+    command: 'bun scripts/serve.cjs',
+    cwd: path.join(__dirname),
     port: 3456,
     reuseExistingServer: true,
   },

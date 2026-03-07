@@ -15,10 +15,10 @@
     "e2e": "turbo run e2e",
     "docs:dev": "turbo run dev --filter=@markitjs/docs",
     "docs:build": "turbo run build --filter=@markitjs/docs",
-    "bench": "turbo run e2e --filter=@markitjs/e2e-bench",
+    "bench": "turbo run bench",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish",
+    "publish-packages": "changeset publish --no-git-tag",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
