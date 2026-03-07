@@ -36,7 +36,7 @@
     },
     "packages/angular": {
       "name": "@markitjs/angular",
-      "version": "0.0.1",
+      "version": "1.0.0",
       "dependencies": {
         "tslib": "^2.8.1",
       },
@@ -61,12 +61,12 @@
       "peerDependencies": {
         "@angular/common": "^17.0.0 || ^18.0.0 || ^19.0.0",
         "@angular/core": "^17.0.0 || ^18.0.0 || ^19.0.0",
-        "@markitjs/core": ">=0.0.1",
+        "@markitjs/core": ">=1.0.0",
       },
     },
     "packages/core": {
       "name": "@markitjs/core",
-      "version": "0.0.1",
+      "version": "1.0.0",
       "devDependencies": {
         "jsdom": "^26",
         "tsup": "^8",
@@ -76,7 +76,7 @@
     },
     "packages/react": {
       "name": "@markitjs/react",
-      "version": "0.0.1",
+      "version": "1.0.0",
       "dependencies": {
         "@markitjs/core": "workspace:*",
       },

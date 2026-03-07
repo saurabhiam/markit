@@ -3,6 +3,16 @@
   "version": "1.0.0",
   "description": "Angular bindings for @markitjs/core text highlighting engine",
   "type": "module",
+  "main": "./dist/fesm2022/markitjs-angular.mjs",
+  "module": "./dist/fesm2022/markitjs-angular.mjs",
+  "types": "./dist/types/markitjs-angular.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/markitjs-angular.d.ts",
+      "import": "./dist/fesm2022/markitjs-angular.mjs",
+      "default": "./dist/fesm2022/markitjs-angular.mjs"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -14,6 +24,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
+    "@markitjs/core": "^1.0.0",
     "tslib": "^2.8.1"
   },
   "peerDependencies": {

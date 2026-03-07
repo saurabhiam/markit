@@ -42,9 +42,7 @@ export default defineConfig({
 
     socialLinks: [{ icon: 'github', link: 'https://github.com/saurabhiam/markit' }],
 
-    footer: {
-      message:
-        'Released under the MIT License. <span class="footer-india"><a href="https://madewithloveinindia.org" target="_blank">Made with <span aria-label="Love" style="color: #f43f5e">&hearts;</span> in India</a></span>',
-    },
+    // Footer content is rendered via theme Layout.vue (layout-bottom slot) so it
+    // appears on all pages including doc pages with sidebar. No themeConfig.footer.
   },
 });

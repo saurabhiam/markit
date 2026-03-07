@@ -13,18 +13,23 @@ High-performance text highlighting for the modern web. A production-grade altern
 
 ## Packages
 
-| Package                                 | Description                                               | Version                                                                                                   |
-| --------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| [`@markitjs/core`](packages/core)       | Framework-agnostic highlighting engine                    | [![npm](https://img.shields.io/npm/v/@markitjs/core)](https://www.npmjs.com/package/@markitjs/core)       |
-| [`@markitjs/react`](packages/react)     | React hook (`useHighlight`) and `<Highlighter>` component | [![npm](https://img.shields.io/npm/v/@markitjs/react)](https://www.npmjs.com/package/@markitjs/react)     |
-| [`@markitjs/angular`](packages/angular) | Angular directive (`markitHighlight`) and `MarkitService` | [![npm](https://img.shields.io/npm/v/@markitjs/angular)](https://www.npmjs.com/package/@markitjs/angular) |
+| Package                                 | Description                                               | Version                                                |
+| --------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------ |
+| `[@markitjs/core](packages/core)`       | Framework-agnostic highlighting engine                    | [npm](https://www.npmjs.com/package/@markitjs/core)    |
+| `[@markitjs/react](packages/react)`     | React hook (`useHighlight`) and `<Highlighter>` component | [npm](https://www.npmjs.com/package/@markitjs/react)   |
+| `[@markitjs/angular](packages/angular)` | Angular directive (`markitHighlight`) and `MarkitService` | [npm](https://www.npmjs.com/package/@markitjs/angular) |
 
 ## Quick Start
 
 ### Vanilla JavaScript
 
 ```bash
+# npm
 npm install @markitjs/core
+# bun
+bun add @markitjs/core
+# pnpm
+pnpm add @markitjs/core
 ```
 
 ```typescript
@@ -40,7 +45,12 @@ instance.destroy();
 ### React / Next.js
 
 ```bash
+# npm
 npm install @markitjs/react
+# bun
+bun add @markitjs/react
+# pnpm
+pnpm add @markitjs/react
 ```
 
 ```tsx
@@ -61,7 +71,12 @@ SSR-safe — `useEffect` doesn't run during server rendering or hydration. No hy
 ### Angular
 
 ```bash
-npm install @markitjs/core @markitjs/angular
+# npm
+npm install @markitjs/angular
+# bun
+bun add @markitjs/angular
+# pnpm
+pnpm add @markitjs/angular
 ```
 
 ```typescript
@@ -94,20 +109,20 @@ Runs outside NgZone. Compatible with OnPush, Signals, and zoneless apps.
 
 ## Key Options
 
-| Option               | Type                                                          | Default       | Description                                    |
-| -------------------- | ------------------------------------------------------------- | ------------- | ---------------------------------------------- |
-| `renderer`           | `'auto' \| 'highlight-api' \| 'dom' \| 'overlay'`             | `'auto'`      | Rendering strategy                             |
-| `caseSensitive`      | `boolean`                                                     | `false`       | Case-sensitive matching                        |
-| `ignoreDiacritics`   | `boolean`                                                     | `false`       | Strip diacritics (café → cafe)                 |
-| `accuracy`           | `'partially' \| 'exactly' \| 'startsWith' \| 'complementary'` | `'partially'` | Match accuracy mode                            |
-| `separateWordSearch` | `boolean`                                                     | `false`       | Split term into individual words               |
-| `acrossElements`     | `boolean`                                                     | `false`       | Match across element boundaries                |
-| `synonyms`           | `SynonymMap`                                                  | —             | Synonym expansion (`{ "JS": ["JavaScript"] }`) |
-| `wildcards`          | `'disabled' \| 'enabled' \| 'withSpaces'`                     | `'disabled'`  | Wildcard `?` and `*` support                   |
-| `exclude`            | `string[]`                                                    | —             | CSS selectors to skip                          |
-| `batchSize`          | `number`                                                      | `0`           | Async batch rendering (0 = synchronous)        |
-| `debounce`           | `number`                                                      | `0`           | Debounce delay in ms for live search           |
-| `debug`              | `boolean`                                                     | `false`       | Log timing to console                          |
+| Option               | Type         | Default         | Description                                    |
+| -------------------- | ------------ | --------------- | ---------------------------------------------- | ---------------- | ---------------------------- | ------------------- |
+| `renderer`           | `'auto'      | 'highlight-api' | 'dom'                                          | 'overlay'`       | `'auto'`                     | Rendering strategy  |
+| `caseSensitive`      | `boolean`    | `false`         | Case-sensitive matching                        |
+| `ignoreDiacritics`   | `boolean`    | `false`         | Strip diacritics (café → cafe)                 |
+| `accuracy`           | `'partially' | 'exactly'       | 'startsWith'                                   | 'complementary'` | `'partially'`                | Match accuracy mode |
+| `separateWordSearch` | `boolean`    | `false`         | Split term into individual words               |
+| `acrossElements`     | `boolean`    | `false`         | Match across element boundaries                |
+| `synonyms`           | `SynonymMap` | —               | Synonym expansion (`{ "JS": ["JavaScript"] }`) |
+| `wildcards`          | `'disabled'  | 'enabled'       | 'withSpaces'`                                  | `'disabled'`     | Wildcard `?` and `*` support |
+| `exclude`            | `string[]`   | —               | CSS selectors to skip                          |
+| `batchSize`          | `number`     | `0`             | Async batch rendering (0 = synchronous)        |
+| `debounce`           | `number`     | `0`             | Debounce delay in ms for live search           |
+| `debug`              | `boolean`    | `false`         | Log timing to console                          |
 
 See the [full API reference](apps/docs/guide/core-api.md) for all options and callbacks.
 
@@ -206,6 +221,4 @@ See [RELEASING.md](RELEASING.md) for the full release guide.
 
 ---
 
-<p align="right">
-  <a href="https://madewithloveinindia.org" target="_blank">Made with <span aria-label="Love" style="color: #f43f5e">&hearts;</span> in India</a>
-</p>
+<p align="right">Made with ♥ in India</p>
