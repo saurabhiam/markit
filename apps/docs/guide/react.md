@@ -20,11 +20,17 @@ pnpm add @markitjs/react
 
 :::
 
+**Peer dependency:** `@markitjs/core` is required; npm 7+, pnpm, and Yarn install it automatically when you add `@markitjs/react`.
+
 ## Hook Usage
 
 `useHighlight` returns a ref to attach to your container element.
 
+**Next.js App Router:** Add `"use client"` at the top of any file that uses `useHighlight` or renders `<Highlighter>` (they use React hooks).
+
 ```tsx
+"use client";
+
 import { useHighlight } from '@markitjs/react';
 
 function SearchResults({ query }: { query: string }) {
@@ -85,6 +91,10 @@ function App() {
 | ...options  | `MarkitOptions`      | —       | All core options are accepted as props |
 
 ## Next.js / SSR Safety
+
+### App Router: use Client Components
+
+In the **App Router**, any file that uses `useHighlight` or renders `<Highlighter>` must be a **Client Component**: add `"use client"` at the top of that file. The library is **SSR-safe** (no hydration mismatch) when used inside a Client Component — highlights are applied after hydration.
 
 ### Why It's Safe
 

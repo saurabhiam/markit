@@ -54,6 +54,8 @@ pnpm add @markitjs/react
 ```
 
 ```tsx
+"use client";
+
 import { useHighlight } from '@markitjs/react';
 
 function SearchResults({ query }: { query: string }) {
@@ -66,7 +68,7 @@ function SearchResults({ query }: { query: string }) {
 }
 ```
 
-SSR-safe — `useEffect` doesn't run during server rendering or hydration. No hydration mismatch.
+Next.js App Router: add `"use client"` at the top of any file that uses the hook or `<Highlighter>`. SSR-safe — no hydration mismatch.
 
 ### Angular
 
