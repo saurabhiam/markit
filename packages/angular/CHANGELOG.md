@@ -1,5 +1,14 @@
 # @markitjs/angular
 
+## 1.0.1
+
+### Patch Changes
+
+- **Full Changelog**: https://github.com/saurabhiam/markit/compare/@markitjs/core@1.0.0...@markitjs/core@1.0.1
+
+- Updated dependencies []:
+  - @markitjs/core@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
