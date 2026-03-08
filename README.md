@@ -109,20 +109,20 @@ Runs outside NgZone. Compatible with OnPush, Signals, and zoneless apps.
 
 ## Key Options
 
-| Option               | Type         | Default         | Description                                    |
-| -------------------- | ------------ | --------------- | ---------------------------------------------- | ---------------- | ---------------------------- | ------------------- |
-| `renderer`           | `'auto'      | 'highlight-api' | 'dom'                                          | 'overlay'`       | `'auto'`                     | Rendering strategy  |
-| `caseSensitive`      | `boolean`    | `false`         | Case-sensitive matching                        |
-| `ignoreDiacritics`   | `boolean`    | `false`         | Strip diacritics (café → cafe)                 |
-| `accuracy`           | `'partially' | 'exactly'       | 'startsWith'                                   | 'complementary'` | `'partially'`                | Match accuracy mode |
-| `separateWordSearch` | `boolean`    | `false`         | Split term into individual words               |
-| `acrossElements`     | `boolean`    | `false`         | Match across element boundaries                |
-| `synonyms`           | `SynonymMap` | —               | Synonym expansion (`{ "JS": ["JavaScript"] }`) |
-| `wildcards`          | `'disabled'  | 'enabled'       | 'withSpaces'`                                  | `'disabled'`     | Wildcard `?` and `*` support |
-| `exclude`            | `string[]`   | —               | CSS selectors to skip                          |
-| `batchSize`          | `number`     | `0`             | Async batch rendering (0 = synchronous)        |
-| `debounce`           | `number`     | `0`             | Debounce delay in ms for live search           |
-| `debug`              | `boolean`    | `false`         | Log timing to console                          |
+| Option               | Type                                                          | Default       | Description                                    |
+| -------------------- | ------------------------------------------------------------- | ------------- | ---------------------------------------------- |
+| `renderer`           | `'auto'`, `'highlight-api'`, `'dom'`, `'overlay'`             | `'auto'`      | Rendering strategy                             |
+| `caseSensitive`      | `boolean`                                                     | `false`       | Case-sensitive matching                        |
+| `ignoreDiacritics`   | `boolean`                                                     | `false`       | Strip diacritics (café → cafe)                 |
+| `accuracy`           | `'partially'`, `'exactly'`, `'startsWith'`, `'complementary'` | `'partially'` | Match accuracy mode                            |
+| `separateWordSearch` | `boolean`                                                     | `false`       | Split term into individual words               |
+| `acrossElements`     | `boolean`                                                     | `false`       | Match across element boundaries                |
+| `synonyms`           | `SynonymMap`                                                  | —             | Synonym expansion (`{ "JS": ["JavaScript"] }`) |
+| `wildcards`          | `'disabled'`, `'enabled'`, `'withSpaces'`                     | `'disabled'`  | Wildcard `?` and `*` support                   |
+| `exclude`            | `string[]`                                                    | —             | CSS selectors to skip                          |
+| `batchSize`          | `number`                                                      | `0`           | Async batch rendering (0 = synchronous)        |
+| `debounce`           | `number`                                                      | `0`           | Debounce delay in ms for live search           |
+| `debug`              | `boolean`                                                     | `false`       | Log timing to console                          |
 
 See the [full API reference](apps/docs/guide/core-api.md) for all options and callbacks.
 

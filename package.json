@@ -5,6 +5,11 @@
     "packages/*",
     "apps/*"
   ],
+  "overrides": {
+    "@markitjs/core": "workspace:*",
+    "@markitjs/react": "workspace:*",
+    "@markitjs/angular": "workspace:*"
+  },
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
