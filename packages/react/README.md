@@ -8,13 +8,17 @@ React bindings for the [@markitjs/core](https://github.com/saurabhiam/markit/tre
 npm install @markitjs/react
 # or
 bun add @markitjs/react
+# or
+pnpm add @markitjs/react
 ```
 
-**Peer dependencies:** React 18+ or 19+
+**Peer dependencies:** React 18+ or 19+, and `@markitjs/core` (installed automatically by npm 7+, pnpm, and Yarn).
 
 ## Quick Start
 
 ### Hook
+
+**Next.js App Router:** Add `"use client"` at the top of any file that uses the hook or `<Highlighter>`.
 
 ```tsx
 import { useHighlight } from '@markitjs/react';

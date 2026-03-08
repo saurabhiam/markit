@@ -8,9 +8,11 @@ Angular bindings for the [@markitjs/core](https://github.com/saurabhiam/markit/t
 npm install @markitjs/angular
 # or
 bun add @markitjs/angular
+# or
+pnpm add @markitjs/angular
 ```
 
-**Peer dependencies:** Angular 17, 18, or 19
+**Peer dependencies:** Angular 17, 18, or 19, and `@markitjs/core` (installed automatically by npm 7+, pnpm, and Yarn).
 
 ## Quick Start
 

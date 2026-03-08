@@ -20,6 +20,8 @@ pnpm add @markitjs/angular
 
 :::
 
+**Peer dependency:** `@markitjs/core` is required; npm 7+, pnpm, and Yarn install it automatically when you add `@markitjs/angular`.
+
 ## Directive Usage
 
 The `markitHighlight` attribute directive is the recommended approach for most use cases.
