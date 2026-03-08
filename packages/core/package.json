@@ -1,6 +1,6 @@
 {
   "name": "@markitjs/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "High-performance text highlighting engine with CSS Highlight API and DOM Range rendering",
   "type": "module",
   "main": "./dist/index.cjs",
