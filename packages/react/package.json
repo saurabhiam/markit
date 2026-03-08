@@ -1,6 +1,6 @@
 {
   "name": "@markitjs/react",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "React bindings for @markitjs/core text highlighting engine",
   "type": "module",
   "main": "./dist/index.cjs",
