@@ -1,13 +1,13 @@
-name: Publish Release
-
 # Requires repo secret DRAFT_RELEASE_PAT (PAT with read+write on releases) for listing
 # and publishing draft releases. GITHUB_TOKEN does not return drafts from the API.
+
+name: Publish Release
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to publish (e.g. 1.0.0)'
+      release_tag:
+        description: 'Release tag to publish (e.g. release-2025-03-10-01)'
         required: true
         type: string
 
@@ -37,44 +37,34 @@ jobs:
               throw new Error(`Only repo admins can run Publish Release. Current permission: ${data.permission}`);
             }
 
-      - name: Validate version and tag exists
+      - name: Validate release tag and draft release exists
         id: validate
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.DRAFT_RELEASE_PAT }}
           script: |
-            const version = '${{ inputs.version }}';
-            if (!/^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$/.test(version)) {
-              core.setFailed('Invalid version format. Use semver (e.g. 1.0.0).');
+            const releaseTag = '${{ inputs.release_tag }}';
+            if (!/^release-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}$/.test(releaseTag)) {
+              core.setFailed('Invalid release_tag. Use format release-YYYY-MM-DD-NN (e.g. release-2025-03-10-01).');
               return;
             }
-
-            // Get all releases
             const { data: releases } = await github.rest.repos.listReleases({
               owner: context.repo.owner,
               repo: context.repo.repo,
               per_page: 100,
             });
-
-            // Check if any release exists for this version
-            const packages = ['@markitjs/core', '@markitjs/react', '@markitjs/angular'];
-            for (const pkg of packages) {
-              const tagName = `${pkg}@${version}`;
-              const release = releases.find(r => r.tag_name === tagName);
-              if (!release) {
-                core.setFailed(`Version ${version} has not been finalized. Run Finalize Release first (after merging the release PR), then run Publish with that version.`);
-                return;
-              }
-              if (release.draft) {
-                console.log(`Found draft release for ${tagName}, ready to publish`);
-              } else {
-                console.log(`Found published release for ${tagName}, will skip the publishing`);
-              }
+            const release = releases.find(r => r.tag_name === releaseTag);
+            if (!release) {
+              core.setFailed(`No release found for tag ${releaseTag}. Run Finalize Release first (after merging the release PR).`);
+              return;
+            }
+            if (!release.draft) {
+              console.log(`Release ${releaseTag} is already published.`);
             }
 
       - uses: actions/checkout@v4
         with:
-          ref: refs/tags/@markitjs/core@${{ inputs.version }}
+          ref: refs/tags/${{ inputs.release_tag }}
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
@@ -116,53 +106,69 @@ jobs:
       - name: E2E (smoke)
         run: bun run e2e
 
-      - name: Check if version already on npm
-        id: check_npm
-        run: |
-          VERSION="${{ inputs.version }}"
-          if npm view @markitjs/core@$VERSION version 2>/dev/null; then
-            echo "published=true" >> $GITHUB_OUTPUT
-            echo "Version $VERSION is already on npm, skipping npm publish"
-          else
-            echo "published=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Publish to npm
-        if: steps.check_npm.outputs.published != 'true'
         run: bun run publish-packages
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish draft GitHub Releases
+      - name: Create package tarballs
+        run: |
+          npm pack ./packages/core
+          npm pack ./packages/react
+          npm pack ./packages/angular
+          ls -la *.tgz
+
+      - name: Create source archive
+        run: |
+          git archive -o "markit-${{ inputs.release_tag }}-source.zip" HEAD
+          ls -la *.zip
+
+      - name: Upload assets to GitHub Release
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.DRAFT_RELEASE_PAT }}
           script: |
-            const version = '${{ inputs.version }}';
-            const packages = ['@markitjs/core', '@markitjs/react', '@markitjs/angular'];
-
-            const { data: releases } = await github.rest.repos.listReleases({
+            const releaseTag = '${{ inputs.release_tag }}';
+            const fs = require('fs');
+            const path = require('path');
+            const { data: release } = await github.rest.repos.getReleaseByTag({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              per_page: 100,
+              tag: releaseTag,
             });
-
-            for (const name of packages) {
-              const tag = `${name}@${version}`;
-              const release = releases.find(r => r.tag_name === tag);
-              if (!release) {
-                throw new Error(`Draft release not found for ${tag}. Run Finalize Release first.`);
-              }
-              if (!release.draft) {
-                console.log(`Release ${tag} is already published, skipping`);
-                continue;
-              }
-              await github.rest.repos.updateRelease({
+            const files = fs.readdirSync('.').filter(f => f.endsWith('.tgz') || (f.endsWith('.zip') && f.includes('source')));
+            for (const file of files) {
+              const data = fs.readFileSync(file);
+              await github.rest.repos.uploadReleaseAsset({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 release_id: release.id,
-                draft: false,
+                name: path.basename(file),
+                data,
               });
-              console.log(`Published release for ${tag}`);
+              console.log('Uploaded ' + file);
             }
+
+      - name: Publish draft GitHub Release
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DRAFT_RELEASE_PAT }}
+          script: |
+            const releaseTag = '${{ inputs.release_tag }}';
+            const { data: release } = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: releaseTag,
+            });
+            if (!release.draft) {
+              console.log(`Release ${releaseTag} is already published.`);
+              return;
+            }
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release.id,
+              draft: false,
+            });
+            console.log(`Published release ${releaseTag}`);

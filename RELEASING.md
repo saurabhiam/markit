@@ -10,13 +10,15 @@ For contributing (no changesets required in PRs), see [CONTRIBUTING.md](CONTRIBU
 
 MarkIt uses [Changesets](https://github.com/changesets/changesets) for versioning and changelog generation. Releases are fully automated via three **manual** GitHub Actions runs — only repo **admins** can trigger them. Nothing runs automatically on push.
 
+**Versioning:** Each package (`@markitjs/core`, `@markitjs/react`, `@markitjs/angular`) has **independent versions**. Only packages with changes (and their dependents, when core is bumped) get a version bump. Releases are keyed by a **release tag** (e.g. `release-2025-03-10-01`), not a single version number.
+
 **Three steps:**
 
-1. **Prepare release** — You run the **Prepare Release** workflow, choose the release type (patch / minor / major). It generates release notes from GitHub, creates a changeset, bumps versions, updates changelogs, commits to a branch `release/vX.Y.Z`, and opens a **pull request** to `main`.
-2. **Finalize release** — After the release PR is merged (after CodeQL/checks pass), you run **Finalize Release** with the version (e.g. `1.0.0`). It validates the version on `main`, creates git tags, generates release notes, and creates **draft** GitHub Releases.
-3. **Publish release** — When you're ready to ship, you run the **Publish Release** workflow with the version. It runs tests, build, publishes to npm, and publishes the draft GitHub Releases.
+1. **Prepare release** — You run the **Prepare Release** workflow and choose the bump type **per package** (none / patch / minor / major). The workflow detects which packages have changes since the last release tag, generates a changeset only for those packages, runs `version-packages`, and opens a **pull request** with a suggested release tag (e.g. `release-2025-03-10-01`).
+2. **Finalize release** — After the release PR is merged, you run **Finalize Release** with the release tag. It creates the single **release tag**, creates **package tags** only for packages whose version increased (`@markitjs/core@x.y.z`, etc.), generates release notes (since the previous release tag), and creates **one draft** GitHub Release with a “Package versions” section.
+3. **Publish release** — When you're ready to ship, you run **Publish Release** with the release tag. It checks out that tag, runs tests and build, publishes to npm, creates package tarballs and a source zip, uploads them as **assets** to the single GitHub Release, and publishes the draft.
 
-There is no "Version PR" — you never run `bun run changeset` in PRs. Prepare creates the changeset when you run it.
+There is no “Version PR” — you never run `bun run changeset` in PRs. Prepare creates the changeset when you run it.
 
 ---
 
@@ -31,7 +33,7 @@ There is no "Version PR" — you never run `bun run changeset` in PRs. Prepare c
 
 ## Versioning Strategy
 
-All packages (`@markitjs/core`, `@markitjs/react`, `@markitjs/angular`) use **fixed versioning** — they always share the same version number. This is configured in `.changeset/config.json` via the `fixed` array.
+Packages use **independent versioning** — each has its own version. The `.changeset/config.json` has no `fixed` group; `updateInternalDependencies: "patch"` means when `@markitjs/core` is bumped, dependents (`@markitjs/react`, `@markitjs/angular`) get a patch bump automatically.
 
 ### Semantic Versioning
 
@@ -41,7 +43,11 @@ All packages (`@markitjs/core`, `@markitjs/react`, `@markitjs/angular`) use **fi
 | Minor | New feature, backwards-compatible | `1.0.0 → 1.1.0` |
 | Major | Breaking change                   | `1.0.0 → 2.0.0` |
 
-You choose the bump when you run **Prepare Release** (patch / minor / major).
+You choose the bump **per package** when you run **Prepare Release** (none / patch / minor / major). Only packages that have file changes since the last release tag are eligible; you can set “none” to skip a package.
+
+### Release tag format
+
+Releases are identified by a **release tag**: `release-YYYY-MM-DD-NN` (e.g. `release-2025-03-10-01`). There is **one** such tag per release event. Package tags (`@markitjs/core@1.0.1`, etc.) are created **only for packages whose version increased** in that release.
 
 ---
 
@@ -58,18 +64,18 @@ When you're ready to cut a release:
 1. Go to **GitHub → Actions**.
 2. Select the **Prepare Release** workflow.
 3. Click **Run workflow**.
-4. Choose **release_type**: `patch`, `minor`, or `major` (dropdown).
+4. Set **core_bump**, **react_bump**, **angular_bump** to `none`, `patch`, `minor`, or `major` (only packages with changes will be bumped; “none” skips that package).
 5. Run the workflow.
 
 The workflow will:
 
-- Generate release notes using GitHub's API (from commits/PRs since the last release).
-- Create a changeset with that summary and your chosen bump type.
-- Run `bun run version-packages` (bump packages, update CHANGELOGs).
-- Commit to a branch `release/vX.Y.Z` and push it.
-- Open a pull request to `main`.
+- Find the latest **release tag** (e.g. `release-2025-03-10-01`) to determine “since when” to look for changes. If none exists, it uses a baseline.
+- Detect which of `packages/core`, `packages/react`, `packages/angular` have changes since that ref.
+- Generate a changeset that lists **only** the changed packages you chose to bump (with your selected bump type).
+- Run `bun run version-packages` (only those packages and their dependents get new versions).
+- Open a pull request to `main` with branch name `release/<suggested-release-tag>` (e.g. `release/release-2025-03-10-01`). The PR body includes the new package versions and says: “After merging, run **Finalize Release** with release tag `release-2025-03-10-01`.”
 
-If there's nothing to release (e.g. no new commits since last tag), the run exits with a message and does nothing.
+If no packages have changes or all bumps are “none”, the workflow exits without opening a PR.
 
 ### 3. Merge the release PR
 
@@ -80,37 +86,42 @@ After the PR passes all checks (CodeQL, build, test, etc.), merge it to `main`.
 1. Go to **GitHub → Actions**.
 2. Select the **Finalize Release** workflow.
 3. Click **Run workflow**.
-4. Enter **version** (e.g. `1.0.0` — the version from the merged PR).
+4. Enter **release_tag** (e.g. `release-2025-03-10-01` — use the tag suggested in the PR).
 5. Run the workflow.
 
 The workflow will:
 
-- Validate that the version exists on `main`.
-- Create git tags (`@markitjs/core@x.y.z`, etc.).
-- Generate release notes.
-- Create **draft** GitHub Releases (you can edit the draft body on GitHub if needed).
+- Validate the release tag format and that it doesn’t already exist.
+- Create and push the **release tag** (e.g. `release-2025-03-10-01`).
+- Compare current package versions on `main` to the versions at the **previous** release tag; only packages whose version **increased** get a package tag (`@markitjs/core@x.y.z`, etc.).
+- Create and push those **package tags** only.
+- Generate release notes for the range **previous release tag → current ref**.
+- Build the release body: “Package versions” (list of the three packages and their versions) plus the generated notes.
+- Create **one draft** GitHub Release for the release tag with that body.
 
 ### 5. Publish the release
 
-When you're happy with the drafts and want to ship:
+When you're happy with the draft and want to ship:
 
 1. Go to **GitHub → Actions**.
 2. Select the **Publish Release** workflow.
 3. Click **Run workflow**.
-4. Enter **version** (e.g. `1.0.0` — the version that Finalize just created).
+4. Enter **release_tag** (e.g. `release-2025-03-10-01`).
 5. Run the workflow.
 
 The workflow will:
 
-- Check out the release at that version (by tag).
+- Check out the repo at the **release tag**.
 - Run typecheck, build, test, and CJS/ESM checks.
-- Publish all three packages to npm.
-- Publish the draft GitHub Releases (they become visible on the Releases page).
+- Publish to npm (`bun run publish-packages` — only packages with new versions are published).
+- Run `npm pack` for each of the three packages and create a **source zip** (`git archive`).
+- Upload these **four assets** (3 tarballs + 1 zip) to the **single** GitHub Release for that tag.
+- Publish the draft Release (it becomes visible on the Releases page).
 
 ### 6. Verify
 
-- Check [npmjs.com/package/@markitjs/core](https://www.npmjs.com/package/@markitjs/core) for the new version.
-- Check the [Releases page](https://github.com/saurabhiam/markit/releases) for the new GitHub Releases.
+- Check [npm](https://www.npmjs.com/package/@markitjs/core) for the new package versions.
+- Check the [Releases page](https://github.com/saurabhiam/markit/releases) for the one release (e.g. “Release release-2025-03-10-01”) and its assets.
 
 ---
 
@@ -120,17 +131,17 @@ Use the **Rollback** workflow when you need to undo a release (e.g. bad publish,
 
 1. Go to **GitHub → Actions** → **Rollback**.
 2. Click **Run workflow**.
-3. Enter **version** (e.g. `1.0.0`) to roll back.
-4. Optionally set **confirm_rollback** (e.g. `true` or the version again) so the job doesn't fail with "Set confirm_rollback to confirm."
+3. Enter **release_tag** (e.g. `release-2025-03-10-01`) to roll back.
+4. Set **confirm_rollback** to `true` or to the release tag.
 5. Run the workflow.
 
 The workflow will:
 
-- Validate that the version exists (semver + at least one release/tag).
-- Delete the GitHub Releases for that version.
-- Delete the git tags.
-- Unpublish the packages from npm (or deprecate them if unpublish is no longer allowed, e.g. after 72 hours).
-- Revert the "chore: version packages" commit on `main`.
+- Resolve the **package versions** that were part of that release (from the tag’s `packages/*/package.json`).
+- Delete the **single** GitHub Release for that release tag.
+- Delete the **release tag** and all **package tags** that were created for that release.
+- Unpublish (or deprecate) those **specific package versions** on npm.
+- Open a PR that **reverts** the merge commit of the release PR (so `main` goes back to the pre-release versions).
 
 Only repo admins can run Rollback.
 
@@ -205,19 +216,17 @@ If the token expires, the Publish workflow will fail at the npm step; fix the se
 
 ## Troubleshooting
 
-### Prepare: "No changes to release"
+### Prepare: “No packages to release”
 
-The workflow found no new commits (or no diff) since the last release. Merge more PRs to `main` and run Prepare again, or confirm the last tag is what you expect.
+The workflow found no changes under any package since the last release tag, or every package’s bump was set to “none”. Merge more PRs and run Prepare again, or adjust the bump choices.
 
-### Finalize: "Version not found on main"
+### Finalize: “Tag already exists”
 
-The version you entered doesn't match the version in `packages/core/package.json` on `main`. Make sure you've merged the release PR first, then run Finalize with the correct version.
+The release tag you entered was already created (e.g. a previous Finalize run). Use a new tag (e.g. increment the sequence: `release-2025-03-10-02`) or, if you already finalized and only need to publish, run **Publish Release** instead.
 
-### Publish: version not found
+### Publish: “No release found for tag”
 
-You entered a version that wasn't finalized. Run **Finalize Release** first (after merging the release PR), then run **Publish Release** with the version that Finalize produced (check the Finalize run output or the draft releases).
-
-If draft releases exist but Publish still fails with "version has not been finalized", ensure the **DRAFT_RELEASE_PAT** repository secret is set and has read+write permission for releases (GitHub's default token does not see drafts).
+You entered a release tag that was never finalized. Run **Finalize Release** first (after merging the release PR), then run **Publish Release** with the same release tag. Ensure **DRAFT_RELEASE_PAT** is set (GitHub’s default token does not see drafts).
 
 ### Publish failed (tests, build, npm)
 
@@ -225,9 +234,9 @@ If draft releases exist but Publish still fails with "version has not been final
 2. Common causes: npm token expired (rotate and update `NPM_TOKEN`), build/test failure (fix on `main` and re-run Publish).
 3. Re-run the **Publish Release** workflow after fixing.
 
-### Accidentally published a bad version
+### Accidentally published a bad release
 
-Use **Rollback** with that version. It will unpublish (if within 72 hours) or deprecate on npm, delete releases and tags, and revert the version commit. After 72 hours, npm only allows deprecation, not unpublish.
+Use **Rollback** with the **release tag** (e.g. `release-2025-03-10-01`). It will unpublish (if within 72 hours) or deprecate the package versions that were part of that release, delete the single GitHub Release and its tags, and open a revert PR.
 
 ---
 
@@ -237,29 +246,29 @@ Before the first publish:
 
 - [ ] npm org `@markitjs` exists, token created, `NPM_TOKEN` in GitHub Environment `npm-publish`
 - [ ] `DRAFT_RELEASE_PAT` added in repo Secrets (read+write releases)
-- [ ] `.changeset/config.json` has the fixed group and ignore list
+- [ ] `.changeset/config.json` has no `fixed` group and has `updateInternalDependencies: "patch"` and the ignore list
 
 To do the first release:
 
 1. Merge at least one PR to `main` (or have commits since the repo start).
-2. Run **Prepare Release** with **release_type** = `minor` (or `major` for 1.0.0).
-3. Merge the release PR after checks pass.
-4. Run **Finalize Release** with the version shown (e.g. `0.1.0` or `1.0.0`).
-5. Run **Publish Release** with the same version.
-6. Verify on npm and the Releases page.
+2. Run **Prepare Release** with the desired bump types (e.g. core: minor, react: patch, angular: patch). Merge the release PR.
+3. Run **Finalize Release** with the suggested release tag (e.g. `release-2025-03-10-01`).
+4. Run **Publish Release** with the same release tag.
+5. Verify on npm and the Releases page.
 
 ---
 
 ## Workflow reference
 
-| Workflow          | File                                      | Trigger             | Purpose                                                     |
-| ----------------- | ----------------------------------------- | ------------------- | ----------------------------------------------------------- |
-| Prepare Release   | `.github/workflows/prepare-release.yml`   | Manual (admin only) | release_type → changeset, version, PR to main               |
-| Finalize Release  | `.github/workflows/finalize-release.yml`  | Manual (admin only) | version → validate, tags, draft releases                    |
-| Publish Release   | `.github/workflows/publish-release.yml`   | Manual (admin only) | version → test, build, npm publish, publish releases        |
-| Rollback          | `.github/workflows/rollback.yml`          | Manual (admin only) | version → delete releases/tags, unpublish/deprecate, revert |
-| CI                | `.github/workflows/ci.yml`                | Push/PR to `main`   | Build, test, typecheck, format                              |
-| Prerelease        | `.github/workflows/prerelease.yml`        | Push to `next`      | Prerelease version + publish                                |
-| Docs              | `.github/workflows/docs.yml`              | Push to `main`      | Build and deploy documentation                              |
-| Bundle Size       | `.github/workflows/bundle-size.yml`       | PR to `main`        | Measure bundle sizes                                        |
-| Dependency Review | `.github/workflows/dependency-review.yml` | PR to `main`        | Block vulnerable dependencies                               |
+| Workflow             | File                                         | Trigger             | Purpose                                                                                                    |
+| -------------------- | -------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Prepare Release      | `.github/workflows/prepare-release.yml`      | Manual (admin only) | Per-package bump → changeset, version, PR with suggested release tag                                       |
+| Finalize Release     | `.github/workflows/finalize-release.yml`     | Manual (admin only) | release_tag → one release tag, package tags (bumped only), one draft                                       |
+| Publish Release      | `.github/workflows/publish-release.yml`      | Manual (admin only) | release_tag → test, build, npm publish, 4 assets, publish one release                                      |
+| Rollback             | `.github/workflows/rollback.yml`             | Manual (admin only) | release_tag → delete release/tags, unpublish those versions, revert PR                                     |
+| Test Publish Release | `.github/workflows/test-publish-release.yml` | Manual              | release_tag → verify tag exists, package versions at tag, package tags, single GitHub Release (no publish) |
+| CI                   | `.github/workflows/ci.yml`                   | Push/PR to `main`   | Build, test, typecheck, format                                                                             |
+| Prerelease           | `.github/workflows/prerelease.yml`           | Push to `next`      | Prerelease version + publish                                                                               |
+| Docs                 | `.github/workflows/docs.yml`                 | Push to `main`      | Build and deploy documentation                                                                             |
+| Bundle Size          | `.github/workflows/bundle-size.yml`          | PR to `main`        | Measure bundle sizes                                                                                       |
+| Dependency Review    | `.github/workflows/dependency-review.yml`    | PR to `main`        | Block vulnerable dependencies                                                                              |

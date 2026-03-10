@@ -3,11 +3,32 @@ name: Prepare Release
 on:
   workflow_dispatch:
     inputs:
-      release_type:
-        description: 'Bump type'
+      core_bump:
+        description: 'Bump type for @markitjs/core'
         required: true
         type: choice
         options:
+          - none
+          - patch
+          - minor
+          - major
+        default: patch
+      react_bump:
+        description: 'Bump type for @markitjs/react'
+        required: true
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+          - major
+        default: patch
+      angular_bump:
+        description: 'Bump type for @markitjs/angular'
+        required: true
+        type: choice
+        options:
+          - none
           - patch
           - minor
           - major
@@ -42,48 +63,97 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get previous release tag
+        id: previous_release
+        run: |
+          PREV=$(git tag -l 'release-*' --sort=-v:refname | head -n1)
+          echo "tag=${PREV:-}" >> $GITHUB_OUTPUT
+          if [ -z "$PREV" ]; then
+            REF=$(git rev-list --max-parents=0 HEAD 2>/dev/null | head -1)
+            echo "ref=${REF:-HEAD}" >> $GITHUB_OUTPUT
+          else
+            echo "ref=$PREV" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Detect changed packages
+        id: changed_packages
+        run: |
+          REF="${{ steps.previous_release.outputs.ref }}"
+          CHANGED=$(git diff "$REF"..HEAD --name-only | grep -E '^packages/(core|react|angular)/' | cut -d/ -f2 | sort -u || true)
+          echo "packages<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          if [ -z "$CHANGED" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check no packages to bump
+        id: to_bump
+        run: |
+          PKGS="${{ steps.changed_packages.outputs.packages }}"
+          CORE_B="${{ inputs.core_bump }}"
+          REACT_B="${{ inputs.react_bump }}"
+          ANGULAR_B="${{ inputs.angular_bump }}"
+          TO_BUMP=""
+          echo "$PKGS" | tr '\n' ' ' | grep -q core && [ "$CORE_B" != "none" ] && TO_BUMP="${TO_BUMP} core"
+          echo "$PKGS" | tr '\n' ' ' | grep -q react && [ "$REACT_B" != "none" ] && TO_BUMP="${TO_BUMP} react"
+          echo "$PKGS" | tr '\n' ' ' | grep -q angular && [ "$ANGULAR_B" != "none" ] && TO_BUMP="${TO_BUMP} angular"
+          TO_BUMP=$(echo "$TO_BUMP" | xargs)
+          echo "list=$TO_BUMP" >> $GITHUB_OUTPUT
+          if [ -z "$TO_BUMP" ]; then
+            echo "has_bump=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_bump=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip when nothing to release
+        if: steps.changed_packages.outputs.has_changes != 'true' || steps.to_bump.outputs.has_bump != 'true'
+        run: |
+          echo "No packages to release (no changes since last release, or all bumps set to 'none')."
+          exit 0
+
       - uses: oven-sh/setup-bun@v2
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
         with:
           bun-version: '1.3.10'
 
       - uses: actions/setup-node@v4
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
         with:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
         run: bun install --frozen-lockfile
 
-      - name: Get current version and compute next version
-        id: version
+      - name: Suggest release tag
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
+        id: suggested_tag
         run: |
-          CURRENT=$(node -p "require('./packages/core/package.json').version")
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
-          IFS='.' read -r MAJ MIN PATCH <<< "$CURRENT"
-          case "${{ inputs.release_type }}" in
-            major) echo "next=$((MAJ + 1)).0.0" >> $GITHUB_OUTPUT ;;
-            minor) echo "next=${MAJ}.$((MIN + 1)).0" >> $GITHUB_OUTPUT ;;
-            patch) echo "next=${MAJ}.${MIN}.$((PATCH + 1))" >> $GITHUB_OUTPUT ;;
-            *) echo "next=${MAJ}.${MIN}.$((PATCH + 1))" >> $GITHUB_OUTPUT ;;
-          esac
-
-      - name: Get previous release tag
-        id: previous_tag
-        run: |
-          PREV=$(git tag -l '@markitjs/core@*' --sort=-v:refname | head -n1)
-          echo "tag=${PREV:-}" >> $GITHUB_OUTPUT
+          DATE=$(date +%Y-%m-%d)
+          EXISTING=$(git tag -l "release-${DATE}-*" 2>/dev/null | sort -V | tail -1)
+          if [ -z "$EXISTING" ]; then
+            SEQ="01"
+          else
+            N=$(echo "$EXISTING" | grep -oE '[0-9]+$')
+            SEQ=$(printf "%02d" $((10#$N + 1)))
+          fi
+          echo "tag=release-${DATE}-${SEQ}" >> $GITHUB_OUTPUT
 
       - name: Generate release notes
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
         id: release_notes
         uses: actions/github-script@v7
         with:
           script: |
-            const nextVersion = '${{ steps.version.outputs.next }}';
-            const tagName = `@markitjs/core@${nextVersion}`;
-            const previousTag = '${{ steps.previous_tag.outputs.tag }}';
-            const params = previousTag
-              ? { tag_name: tagName, previous_tag_name: previousTag, target_commitish: 'main' }
-              : { tag_name: tagName, target_commitish: 'main' };
+            const prevTag = '${{ steps.previous_release.outputs.tag }}';
+            const releaseTag = '${{ steps.suggested_tag.outputs.tag }}';
+            const params = prevTag
+              ? { tag_name: releaseTag, previous_tag_name: prevTag, target_commitish: 'main' }
+              : { tag_name: releaseTag, target_commitish: 'main' };
             const { data } = await github.rest.repos.generateReleaseNotes({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -93,40 +163,65 @@ jobs:
             fs.writeFileSync('release-notes-body.md', data.body || '');
 
       - name: Create changeset file
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
         run: |
           find .changeset -name '*.md' ! -name 'README.md' -delete 2>/dev/null || true
-          RT="${{ inputs.release_type }}"
+          PKGS="${{ steps.to_bump.outputs.list }}"
+          CORE_B="${{ inputs.core_bump }}"
+          REACT_B="${{ inputs.react_bump }}"
+          ANGULAR_B="${{ inputs.angular_bump }}"
+          LINES=""
+          echo "$PKGS" | grep -q core && [ "$CORE_B" != "none" ] && LINES="${LINES}\"@markitjs/core\": \"$CORE_B\"\n"
+          echo "$PKGS" | grep -q react && [ "$REACT_B" != "none" ] && LINES="${LINES}\"@markitjs/react\": \"$REACT_B\"\n"
+          echo "$PKGS" | grep -q angular && [ "$ANGULAR_B" != "none" ] && LINES="${LINES}\"@markitjs/angular\": \"$ANGULAR_B\"\n"
           ID=$(openssl rand -hex 4)
           {
             echo "---"
-            echo '"@markitjs/core": '"$RT"
-            echo '"@markitjs/react": '"$RT"
-            echo '"@markitjs/angular": '"$RT"
+            printf "$LINES"
             echo "---"
             echo ""
             cat release-notes-body.md
           } > ".changeset/release-${ID}.md"
 
       - name: Version packages
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
         run: bun run version-packages
 
-      - name: Check for changes
-        id: changes
+      - name: Check version actually changed
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
+        id: version_changed
         run: |
           if git diff --quiet packages/core/package.json packages/react/package.json packages/angular/package.json 2>/dev/null; then
-            echo "No version or changelog changes. Nothing to release."
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            exit 0
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
           fi
-          echo "has_changes=true" >> $GITHUB_OUTPUT
-          echo "version=${{ steps.version.outputs.next }}" >> $GITHUB_OUTPUT
+
+      - name: Skip if no version change
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true' && steps.version_changed.outputs.changed != 'true'
+        run: |
+          echo "version-packages produced no changes (e.g. dependents already bumped). Nothing to release."
+          exit 0
+
+      - name: Read new versions
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true' && steps.version_changed.outputs.changed == 'true'
+        id: versions
+        run: |
+          CORE=$(node -p "require('./packages/core/package.json').version")
+          REACT=$(node -p "require('./packages/react/package.json').version")
+          ANGULAR=$(node -p "require('./packages/angular/package.json').version")
+          echo "core=$CORE" >> $GITHUB_OUTPUT
+          echo "react=$REACT" >> $GITHUB_OUTPUT
+          echo "angular=$ANGULAR" >> $GITHUB_OUTPUT
+          echo "max=$CORE" >> $GITHUB_OUTPUT
 
       - name: Create release branch and commit
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true' && steps.version_changed.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          BRANCH="release/v${{ steps.version.outputs.next }}"
+          RELEASE_TAG="${{ steps.suggested_tag.outputs.tag }}"
+          BRANCH="release/${RELEASE_TAG}"
           git checkout -b "$BRANCH"
           git add packages/core/package.json packages/react/package.json packages/angular/package.json \
             packages/core/CHANGELOG.md packages/react/CHANGELOG.md packages/angular/CHANGELOG.md \
@@ -136,24 +231,32 @@ jobs:
           git push -u origin "$BRANCH"
 
       - name: Open pull request
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true' && steps.version_changed.outputs.changed == 'true'
         id: open_pr
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const nextVersion = '${{ steps.version.outputs.next }}';
+            const releaseTag = '${{ steps.suggested_tag.outputs.tag }}';
+            const coreV = '${{ steps.versions.outputs.core }}';
+            const reactV = '${{ steps.versions.outputs.react }}';
+            const angularV = '${{ steps.versions.outputs.angular }}';
             let body = '';
             try {
               body = fs.readFileSync('release-notes-body.md', 'utf8');
             } catch (_) {}
+            body += '\n\n---\n\n**Package versions after this PR:**\n';
+            body += `- @markitjs/core: ${coreV}\n`;
+            body += `- @markitjs/react: ${reactV}\n`;
+            body += `- @markitjs/angular: ${angularV}\n\n`;
+            body += `After merging, run **Finalize Release** with release tag \`${releaseTag}\`.`;
             const { data: pr } = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: `release/v${nextVersion}`,
+              head: `release/${releaseTag}`,
               base: 'main',
-              title: `chore: release v${nextVersion}`,
-              body: body + '\n\n---\n\nAfter merging, run **Finalize Release** with version `' + nextVersion + '`.',
+              title: `chore: release ${releaseTag}`,
+              body,
             });
             console.log(`PR created: ${pr.html_url}`);
             core.setOutput('pr_url', pr.html_url);

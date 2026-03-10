@@ -3,8 +3,8 @@ name: Finalize Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to finalize (e.g. 1.0.0)'
+      release_tag:
+        description: 'Release tag (e.g. release-2025-03-10-01)'
         required: true
         type: string
 
@@ -37,146 +37,150 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Validate version on main
-        id: validate_version
+      - name: Validate release tag format
         run: |
-          CORE_VERSION=$(node -p "require('./packages/core/package.json').version")
-          REACT_VERSION=$(node -p "require('./packages/react/package.json').version")
-          ANGULAR_VERSION=$(node -p "require('./packages/angular/package.json').version")
-          INPUT_VERSION="${{ inputs.version }}"
-
-          if [ "$CORE_VERSION" != "$INPUT_VERSION" ]; then
-            echo "::error::Version $INPUT_VERSION not found on main. Expected $CORE_VERSION. Merge the release PR first."
+          TAG="${{ inputs.release_tag }}"
+          if ! echo "$TAG" | grep -qE '^release-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}$'; then
+            echo "::error::Invalid release_tag. Use format release-YYYY-MM-DD-NN (e.g. release-2025-03-10-01)"
             exit 1
           fi
 
-          echo "Validated: core=$CORE_VERSION react=$REACT_VERSION angular=$ANGULAR_VERSION"
-
-      - name: Check version not previously released
-        id: check_not_released
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const version = '${{ inputs.version }}';
-            const packages = ['core', 'react', 'angular'];
-
-            // Check git tags
-            const { execSync } = require('child_process');
-            for (const pkg of packages) {
-              const tag = `@markitjs/${pkg}@${version}`;
-              const tags = execSync(`git tag -l "${tag}"`).toString().trim();
-              if (tags) {
-                throw new Error(`Version ${tag} is already tagged. This version has already been released.`);
-              }
-            }
-
-            // Check GitHub releases
-            const { data: releases } = await github.rest.repos.listReleases({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 100,
-            });
-
-            for (const pkg of packages) {
-              const tagName = `@markitjs/${pkg}@${version}`;
-              const existingRelease = releases.find(r => r.tag_name === tagName);
-              if (existingRelease) {
-                throw new Error(`Release for ${tagName} already exists. This version has already been released.`);
-              }
-            }
-
-            console.log(`Version ${version} has not been released yet.`);
-
-      - name: Build release list
-        id: release_list
+      - name: Check release tag does not exist
         run: |
-          for pkg in core react angular; do
-            name=$(node -p "require('./packages/$pkg/package.json').name")
-            version=$(node -p "require('./packages/$pkg/package.json').version")
-            echo "${name}@${version}"
-          done | jq -R -s -c 'split("\n") | map(select(length > 0))' > release-list.json
-          cat release-list.json
+          TAG="${{ inputs.release_tag }}"
+          if git rev-parse "$TAG" 2>/dev/null; then
+            echo "::error::Tag $TAG already exists. Use a different release tag or run Publish if this release was already finalized."
+            exit 1
+          fi
 
-      - name: Create and push tags
+      - name: Read current package versions
+        id: current_versions
         run: |
-          while IFS= read -r line; do
-            tag="${line}"
+          CORE=$(node -p "require('./packages/core/package.json').version")
+          REACT=$(node -p "require('./packages/react/package.json').version")
+          ANGULAR=$(node -p "require('./packages/angular/package.json').version")
+          echo "core=$CORE" >> $GITHUB_OUTPUT
+          echo "react=$REACT" >> $GITHUB_OUTPUT
+          echo "angular=$ANGULAR" >> $GITHUB_OUTPUT
+
+      - name: Get previous release tag and read previous versions
+        id: previous_versions
+        run: |
+          PREV=$(git tag -l 'release-*' --sort=-v:refname | grep -v "${{ inputs.release_tag }}" | head -n1)
+          echo "tag=${PREV:-}" >> $GITHUB_OUTPUT
+          if [ -z "$PREV" ]; then
+            echo "core=0.0.0" >> $GITHUB_OUTPUT
+            echo "react=0.0.0" >> $GITHUB_OUTPUT
+            echo "angular=0.0.0" >> $GITHUB_OUTPUT
+          else
+            for pkg in core react angular; do
+              git show "${PREV}:packages/${pkg}/package.json" > "/tmp/${pkg}.json" 2>/dev/null || true
+              ver=$(node -p "require('/tmp/${pkg}.json').version" 2>/dev/null || echo "0.0.0")
+              echo "${pkg}=${ver}" >> $GITHUB_OUTPUT
+            done
+          fi
+
+      - name: Determine bumped packages and create package tags
+        id: package_tags
+        run: |
+          RELEASE_TAG="${{ inputs.release_tag }}"
+          CORE="${{ steps.current_versions.outputs.core }}"
+          REACT="${{ steps.current_versions.outputs.react }}"
+          ANGULAR="${{ steps.current_versions.outputs.angular }}"
+          OLD_CORE="${{ steps.previous_versions.outputs.core }}"
+          OLD_REACT="${{ steps.previous_versions.outputs.react }}"
+          OLD_ANGULAR="${{ steps.previous_versions.outputs.angular }}"
+          TAGS=""
+          [ "$CORE" != "$OLD_CORE" ] && TAGS="${TAGS}@markitjs/core@${CORE}"
+          [ "$REACT" != "$OLD_REACT" ] && TAGS="${TAGS} @markitjs/react@${REACT}"
+          [ "$ANGULAR" != "$OLD_ANGULAR" ] && TAGS="${TAGS} @markitjs/angular@${ANGULAR}"
+          TAGS=$(echo "$TAGS" | xargs)
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "$TAGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create and push release tag
+        run: |
+          git tag "${{ inputs.release_tag }}"
+          git push origin "${{ inputs.release_tag }}"
+
+      - name: Create and push package tags (bumped only)
+        run: |
+          TAGS="${{ steps.package_tags.outputs.tags }}"
+          for tag in $TAGS; do
             [ -z "$tag" ] && continue
             git tag "$tag"
             git push origin "$tag"
-          done < <(jq -r '.[]' release-list.json)
+          done
 
       - name: Generate release notes
         id: release_notes
         uses: actions/github-script@v7
         with:
           script: |
-            const nextVersion = '${{ inputs.version }}';
-            const tagName = `@markitjs/core@${nextVersion}`;
-            const fs = require('fs');
-
-            // Get previous tag
-            const { data: tags } = await github.rest.repos.listTags({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 100,
-            });
-            const previousTag = tags.find(t => t.name.startsWith('@markitjs/core@'))?.name;
-
-            const params = previousTag
-              ? { tag_name: tagName, previous_tag_name: previousTag, target_commitish: 'main' }
-              : { tag_name: tagName, target_commitish: 'main' };
+            const releaseTag = '${{ inputs.release_tag }}';
+            const prevTag = '${{ steps.previous_versions.outputs.tag }}';
+            const params = prevTag
+              ? { tag_name: releaseTag, previous_tag_name: prevTag, target_commitish: 'main' }
+              : { tag_name: releaseTag, target_commitish: 'main' };
             const { data } = await github.rest.repos.generateReleaseNotes({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ...params,
             });
+            const fs = require('fs');
             fs.writeFileSync('release-notes-body.md', data.body || '');
 
-      - name: Create draft GitHub Releases
+      - name: Build release body with package versions
+        id: release_body
+        run: |
+          CORE="${{ steps.current_versions.outputs.core }}"
+          REACT="${{ steps.current_versions.outputs.react }}"
+          ANGULAR="${{ steps.current_versions.outputs.angular }}"
+          {
+            echo "## Package versions"
+            echo ""
+            echo "- @markitjs/core: $CORE"
+            echo "- @markitjs/react: $REACT"
+            echo "- @markitjs/angular: $ANGULAR"
+            echo ""
+            echo "---"
+            echo ""
+            cat release-notes-body.md
+          } > release-body-final.md
+
+      - name: Create draft GitHub Release
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const list = JSON.parse(fs.readFileSync('release-list.json', 'utf8'));
-            let body = '';
-            try {
-              body = fs.readFileSync('release-notes-body.md', 'utf8');
-            } catch (_) {}
-
-            // Get existing releases
-            const { data: releases } = await github.rest.repos.listReleases({
+            const releaseTag = '${{ inputs.release_tag }}';
+            const body = fs.readFileSync('release-body-final.md', 'utf8');
+            const { data: existing } = await github.rest.repos.getReleaseByTag({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              per_page: 100,
-            });
-
-            for (const pkgVersion of list) {
-              const lastAt = pkgVersion.lastIndexOf('@');
-              const name = pkgVersion.slice(0, lastAt);
-              const version = pkgVersion.slice(lastAt + 1);
-              const tag = pkgVersion;
-              const pkgDir = name.replace('@markitjs/', '');
-
-              // Check if release already exists
-              const existingRelease = releases.find(r => r.tag_name === tag);
-              if (existingRelease) {
-                if (existingRelease.draft) {
-                  console.log(`Draft release for ${tag} already exists, skipping`);
-                } else {
-                  console.log(`Published release for ${tag} already exists, skipping`);
-                }
-                continue;
+              tag: releaseTag,
+            }).catch(() => ({ data: null }));
+            if (existing) {
+              if (existing.draft) {
+                await github.rest.repos.updateRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: existing.id,
+                  body,
+                });
+                console.log('Updated existing draft release');
+              } else {
+                console.log('Release already published, skipping');
               }
-
-              await github.rest.repos.createRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag_name: tag,
-                name: `${name} v${version}`,
-                body: body || `See [CHANGELOG](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/packages/${pkgDir}/CHANGELOG.md) for details.`,
-                draft: true,
-                prerelease: version.includes('-'),
-              });
-              console.log(`Created draft release for ${tag}`);
+              return;
             }
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: releaseTag,
+              name: `Release ${releaseTag}`,
+              body,
+              draft: true,
+            });
+            console.log(`Created draft release for ${releaseTag}`);

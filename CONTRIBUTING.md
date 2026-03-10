@@ -101,10 +101,11 @@ markit/
 Releases are documented in [RELEASING.md](RELEASING.md). In short:
 
 1. Maintainers merge PRs to `main` (no changesets in PRs).
-2. When ready to release, an **admin** runs the **Prepare Release** workflow (chooses patch / minor / major). It generates release notes, bumps versions, creates tags, and draft GitHub Releases.
-3. The same admin runs the **Publish Release** workflow with the version number. It runs tests, publishes to npm, and publishes the GitHub Releases.
+2. When ready to release, an **admin** runs the **Prepare Release** workflow (chooses bump type per package: none / patch / minor / major). It detects changed packages, generates a changeset, bumps versions, and opens a PR with a suggested **release tag** (e.g. `release-2025-03-10-01`).
+3. After merging that PR, the admin runs **Finalize Release** with the release tag. It creates the release tag, package tags only for bumped packages, and **one** draft GitHub Release.
+4. The admin runs **Publish Release** with the same release tag. It runs tests, publishes to npm, uploads package tarballs and source zip to the single Release, and publishes it.
 
-Contributors only need to merge their PRs — the rest is done by maintainers via the two workflows.
+Package versions can differ (independent versioning). Contributors only need to merge their PRs — the rest is done by maintainers via these workflows.
 
 ## Questions?
 
