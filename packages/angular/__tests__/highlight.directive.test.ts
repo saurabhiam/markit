@@ -200,4 +200,67 @@ describe('MarkitHighlightDirective', () => {
     expect(marks.length).toBe(1);
     expect(marks[0]!.textContent).toBe('again');
   });
+
+  it('when markitContentKey changes: unmarks then re-applies after view update (no garbled text)', () => {
+    const p = container.querySelector('p')!;
+    p.textContent = 'Hello';
+    directive.searchTerm = 'o';
+    directive.markitContentKey = 'Hello';
+    directive.ngOnChanges({ searchTerm: { currentValue: 'o', previousValue: undefined, firstChange: true, isFirstChange: () => true } } as any);
+    expect(p.textContent).toContain('Hello');
+    expect(container.querySelectorAll('mark').length).toBeGreaterThan(0);
+
+    // Simulate signal update: content key and host content change to "World"
+    directive.markitContentKey = 'World';
+    p.textContent = 'World';
+    directive.ngOnChanges({
+      markitContentKey: { currentValue: 'World', previousValue: 'Hello', firstChange: false, isFirstChange: () => false },
+    } as any);
+    directive.ngAfterViewChecked();
+
+    expect(p.textContent).toBe('World');
+    const marks = container.querySelectorAll('mark');
+    expect(marks.length).toBe(1);
+    expect(marks[0]!.textContent).toBe('o');
+  });
+
+  it('without markitContentKey content is static: only ngOnChanges triggers apply, not content changes', () => {
+    const p = container.querySelector('p')!;
+    p.textContent = 'Hello';
+    directive.searchTerm = 'o';
+    directive.markitOptions = { renderer: 'dom' };
+    directive.ngOnChanges({ searchTerm: {} } as any);
+    expect(container.querySelectorAll('mark').length).toBeGreaterThan(0);
+
+    // Simulate host content changing (e.g. bound value changed) without passing markitContentKey.
+    // Content is treated as static — we do not run cleanup or re-apply, so we do not fix garbled state.
+    p.textContent = 'World';
+    directive.ngAfterViewChecked(); // No re-apply when markitContentKey is undefined.
+
+    expect(p.textContent).toBe('World');
+    // Marks were removed when we set textContent; we did not re-apply (static).
+    expect(container.querySelectorAll('mark').length).toBe(0);
+  });
+
+  it('supports multiple keys in markitContentKey: re-applies when any key in the array changes', () => {
+    const p = container.querySelector('p')!;
+    p.textContent = 'Hello';
+    directive.searchTerm = 'o';
+    directive.markitContentKey = ['Hello', 'v1'];
+    directive.ngOnChanges({ searchTerm: { currentValue: 'o', previousValue: undefined, firstChange: true, isFirstChange: () => true } } as any);
+    expect(container.querySelectorAll('mark').length).toBeGreaterThan(0);
+
+    // Change one key in the array
+    directive.markitContentKey = ['World', 'v1'];
+    p.textContent = 'World';
+    directive.ngOnChanges({
+      markitContentKey: { currentValue: ['World', 'v1'], previousValue: ['Hello', 'v1'], firstChange: false, isFirstChange: () => false },
+    } as any);
+    directive.ngAfterViewChecked();
+
+    expect(p.textContent).toBe('World');
+    const marks = container.querySelectorAll('mark');
+    expect(marks.length).toBe(1);
+    expect(marks[0]!.textContent).toBe('o');
+  });
 });
