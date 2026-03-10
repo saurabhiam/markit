@@ -21,22 +21,25 @@ This page explains how the React and Angular bindings integrate with the core hi
 ### React lifecycle swimlane
 
 ```mermaid
-flowchart LR
-  subgraph Component [Component]
-    Mount[Mount]
-    RefAttached[Ref attached]
-    DepsChange[Deps change or unmount]
+sequenceDiagram
+  participant Component
+  participant useHighlight
+  participant Core
+
+  Component->>Component: Mount
+  Component->>useHighlight: Ref attached
+  useHighlight->>useHighlight: useEffect runs
+  useHighlight->>Core: markit(el) then mark(term, options)
+  Core-->>useHighlight: done
+
+  Note over Component,Core: On deps change or unmount
+  useHighlight->>useHighlight: Cleanup (destroy)
+  alt deps changed
+    useHighlight->>useHighlight: useEffect runs again
+    useHighlight->>Core: markit then mark
+  else unmount
+    useHighlight->>useHighlight: destroy()
   end
-  subgraph UseHighlight [useHighlight]
-    EffectRun[useEffect runs]
-    Cleanup[Cleanup destroy]
-  end
-  subgraph Core [Core]
-    MarkitCreate[markit then mark]
-  end
-  Mount --> RefAttached --> EffectRun --> MarkitCreate
-  DepsChange --> Cleanup --> EffectRun
-  EffectRun --> Cleanup
 ```
 
 ---
@@ -57,26 +60,24 @@ Callbacks (`done`, `noMatch`) are wrapped so they **re-enter NgZone**, so updati
 ### Angular lifecycle swimlane
 
 ```mermaid
-flowchart LR
-  subgraph TemplateCD [Template and change detection]
-    InputsSet[Inputs set]
-    ContentKeyChange[markitContentKey change]
-    Destroy[Directive destroy]
-  end
-  subgraph Directive [Directive]
-    OnChanges[ngOnChanges]
-    CleanupOnly[Cleanup only]
-    AfterViewChecked[ngAfterViewChecked]
-    ApplyHighlight[applyHighlight]
-    OnDestroy[ngOnDestroy cleanup]
-  end
-  subgraph Core [Core]
-    MarkitMark[markit then mark]
-  end
-  InputsSet --> OnChanges --> ApplyHighlight --> MarkitMark
-  ContentKeyChange --> OnChanges --> CleanupOnly
-  CleanupOnly --> AfterViewChecked --> ApplyHighlight
-  Destroy --> OnDestroy
+sequenceDiagram
+  participant TemplateCD as Template / change detection
+  participant Directive
+  participant Core
+
+  TemplateCD->>Directive: Inputs set (term, options)
+  Directive->>Directive: ngOnChanges
+  Directive->>Core: applyHighlight → markit then mark
+  Core-->>Directive: done
+
+  Note over TemplateCD,Core: On markitContentKey change
+  TemplateCD->>Directive: markitContentKey change
+  Directive->>Directive: ngOnChanges (cleanup only)
+  Directive->>Directive: ngAfterViewChecked
+  Directive->>Core: applyHighlight
+
+  TemplateCD->>Directive: Directive destroy
+  Directive->>Directive: ngOnDestroy (cleanup)
 ```
 
 ---
