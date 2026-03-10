@@ -89,11 +89,14 @@ export class EditorComponent implements OnDestroy {
 
 Standalone attribute directive. Apply to any element whose text content you want to highlight.
 
-| Input             | Type                     | Description                                             |
-| ----------------- | ------------------------ | ------------------------------------------------------- |
-| `markitHighlight` | `string \| string[]`     | Search term(s) to highlight                             |
-| `markitOptions`   | `Partial<MarkitOptions>` | All `@markitjs/core` options (renderer, accuracy, etc.) |
-| `markitPlugins`   | `MarkitPlugin[]`         | Plugins to register                                     |
+| Input              | Type                                       | Description                                                                                              |
+| ------------------ | ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `markitHighlight`  | `string \| string[]`                       | Search term(s) to highlight                                                                              |
+| `markitOptions`    | `Partial<MarkitOptions>`                   | All `@markitjs/core` options (renderer, accuracy, etc.)                                                  |
+| `markitPlugins`    | `MarkitPlugin[]`                           | Plugins to register                                                                                      |
+| `markitContentKey` | `string \| number \| (string \| number)[]` | When content is dynamic, pass value(s) that change with content so the directive unmarks and re-applies. |
+
+For dynamic content (e.g. bound to a signal), pass `[markitContentKey]` so highlights re-apply after content updates and avoid garbled text. See [Framework lifecycles](../../apps/docs/guide/framework-lifecycles.md) for how the Angular highlight cycle works.
 
 ### `MarkitService`
 

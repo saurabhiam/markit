@@ -82,13 +82,20 @@ function App() {
 
 ### Props
 
-| Prop        | Type                 | Default | Description                            |
-| ----------- | -------------------- | ------- | -------------------------------------- |
-| `term`      | `string \| string[]` | —       | Search term(s)                         |
-| `as`        | `string`             | `'div'` | Container HTML tag                     |
-| `className` | `string`             | —       | Container CSS class                    |
-| `style`     | `CSSProperties`      | —       | Container inline styles                |
-| ...options  | `MarkitOptions`      | —       | All core options are accepted as props |
+| Prop         | Type                 | Default | Description                                                                  |
+| ------------ | -------------------- | ------- | ---------------------------------------------------------------------------- |
+| `term`       | `string \| string[]` | —       | Search term(s)                                                               |
+| `as`         | `string`             | `'div'` | Container HTML tag                                                           |
+| `className`  | `string`             | —       | Container CSS class                                                          |
+| `style`      | `CSSProperties`      | —       | Container inline styles                                                      |
+| `contentKey` | `Key \| Key[]`       | —       | When content is dynamic, pass value(s) that change with content (see below). |
+| ...options   | `MarkitOptions`      | —       | All core options are accepted as props                                       |
+
+### Dynamic content
+
+When the highlighted content comes from state or props and can change (e.g. tab content, search results list), pass `contentKey` so the effect re-runs when the content identity changes. Use the same value(s) you would use to key the content — for example, an item id or a stringified version of the data. Without `contentKey`, the previous highlight state can overlap the new DOM and produce garbled text. With `<Highlighter>`, pass `contentKey={value}`; the component keys the inner wrapper so React mounts fresh content before re-applying highlights.
+
+For a full picture of the React highlight cycle, see [Framework lifecycles](./framework-lifecycles).
 
 ## Next.js / SSR Safety
 

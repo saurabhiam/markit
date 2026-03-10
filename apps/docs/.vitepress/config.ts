@@ -28,6 +28,7 @@ export default defineConfig({
           items: [
             { text: 'Angular', link: '/guide/angular' },
             { text: 'React / Next.js', link: '/guide/react' },
+            { text: 'Framework lifecycles', link: '/guide/framework-lifecycles' },
           ],
         },
         {
