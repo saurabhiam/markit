@@ -1,6 +1,7 @@
 'use client';
 
 import React, { type ReactNode } from 'react';
+import type { Key } from 'react';
 import { useHighlight, type UseHighlightOptions } from './use-highlight.js';
 
 export interface HighlighterProps extends UseHighlightOptions {
@@ -9,6 +10,13 @@ export interface HighlighterProps extends UseHighlightOptions {
 
   /** Content to render and search within. */
   children: ReactNode;
+
+  /**
+   * Like useEffect deps: pass value(s) that change when the highlighted content changes
+   * to avoid garbled text. Single: contentKey={value}. Multiple: contentKey={[value1, value2]}.
+   * Omit for static content.
+   */
+  contentKey?: Key | Key[];
 
   /** HTML tag for the container element. Default: 'div' */
   as?: keyof React.JSX.IntrinsicElements;
@@ -31,6 +39,9 @@ export interface HighlighterProps extends UseHighlightOptions {
  * elements exist in the server HTML. Highlights are applied only
  * after hydration completes.
  *
+ * For dynamic content (e.g. state), pass contentKey so React remounts
+ * the content when it changes and the highlight re-applies correctly.
+ *
  * @example
  * ```tsx
  * <Highlighter term="react" caseSensitive={false}>
@@ -43,12 +54,30 @@ export interface HighlighterProps extends UseHighlightOptions {
 export function Highlighter({
   term,
   children,
+  contentKey,
   as: Tag = 'div',
   className,
   style,
   ...options
 }: HighlighterProps) {
-  const ref = useHighlight(term, options);
+  const ref = useHighlight(term, { ...options, contentKey });
 
-  return React.createElement(Tag as string, { ref, className, style }, children);
+  const fragmentKey =
+    contentKey === undefined
+      ? undefined
+      : Array.isArray(contentKey)
+        ? JSON.stringify(contentKey)
+        : contentKey;
+
+  if (fragmentKey === undefined) {
+    return React.createElement(Tag as string, { ref, className, style }, children);
+  }
+
+  // Use a wrapper div with key so React unmounts the entire subtree (including any <mark> nodes we added)
+  // and mounts fresh content. Fragment would leave our DOM mutations behind.
+  return React.createElement(
+    Tag as string,
+    { ref, className, style },
+    React.createElement('div', { key: fragmentKey }, children),
+  );
 }
