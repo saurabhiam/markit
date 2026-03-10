@@ -79,7 +79,8 @@ export class MarkitHighlightDirective implements OnChanges, AfterViewChecked, On
     const contentKeyChange = changes['markitContentKey'];
     const contentKeyDidChange =
       contentKeyChange &&
-      (contentKeyChange.firstChange || contentKeyValuesChanged(contentKeyChange.previousValue, contentKeyChange.currentValue));
+      (contentKeyChange.firstChange ||
+        contentKeyValuesChanged(contentKeyChange.previousValue, contentKeyChange.currentValue));
 
     if (contentKeyDidChange) {
       this.ngZone.runOutsideAngular(() => {

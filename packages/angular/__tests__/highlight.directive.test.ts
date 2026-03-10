@@ -206,7 +206,14 @@ describe('MarkitHighlightDirective', () => {
     p.textContent = 'Hello';
     directive.searchTerm = 'o';
     directive.markitContentKey = 'Hello';
-    directive.ngOnChanges({ searchTerm: { currentValue: 'o', previousValue: undefined, firstChange: true, isFirstChange: () => true } } as any);
+    directive.ngOnChanges({
+      searchTerm: {
+        currentValue: 'o',
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    } as any);
     expect(p.textContent).toContain('Hello');
     expect(container.querySelectorAll('mark').length).toBeGreaterThan(0);
 
@@ -214,7 +221,12 @@ describe('MarkitHighlightDirective', () => {
     directive.markitContentKey = 'World';
     p.textContent = 'World';
     directive.ngOnChanges({
-      markitContentKey: { currentValue: 'World', previousValue: 'Hello', firstChange: false, isFirstChange: () => false },
+      markitContentKey: {
+        currentValue: 'World',
+        previousValue: 'Hello',
+        firstChange: false,
+        isFirstChange: () => false,
+      },
     } as any);
     directive.ngAfterViewChecked();
 
@@ -247,14 +259,26 @@ describe('MarkitHighlightDirective', () => {
     p.textContent = 'Hello';
     directive.searchTerm = 'o';
     directive.markitContentKey = ['Hello', 'v1'];
-    directive.ngOnChanges({ searchTerm: { currentValue: 'o', previousValue: undefined, firstChange: true, isFirstChange: () => true } } as any);
+    directive.ngOnChanges({
+      searchTerm: {
+        currentValue: 'o',
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    } as any);
     expect(container.querySelectorAll('mark').length).toBeGreaterThan(0);
 
     // Change one key in the array
     directive.markitContentKey = ['World', 'v1'];
     p.textContent = 'World';
     directive.ngOnChanges({
-      markitContentKey: { currentValue: ['World', 'v1'], previousValue: ['Hello', 'v1'], firstChange: false, isFirstChange: () => false },
+      markitContentKey: {
+        currentValue: ['World', 'v1'],
+        previousValue: ['Hello', 'v1'],
+        firstChange: false,
+        isFirstChange: () => false,
+      },
     } as any);
     directive.ngAfterViewChecked();
 
