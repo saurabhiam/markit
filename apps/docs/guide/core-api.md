@@ -98,6 +98,18 @@ instance.destroy();
 | `batchSize`          | `number`                                                      | `0`                  | Render matches in async batches of this size (0 = synchronous) |
 | `debug`              | `boolean`                                                     | `false`              | Log timing info to console                                     |
 
+::: tip How `renderer: 'auto'` works
+When `renderer` is `'auto'` (the default), MarkIt checks at runtime whether the CSS Custom Highlight API is available (`CSS` and `CSS.highlights`). If it is, the Highlight API renderer is used; otherwise the DOM wrapping renderer is used. The chosen renderer is reused for that instance until you pass a different `renderer` or destroy it. So in supported browsers you get zero-DOM-mutation highlighting; in unsupported environments (e.g. older browsers or Node/jsdom) you get DOM wrapping automatically.
+:::
+
+::: tip Multiple instances
+With the `highlight-api` or `auto` renderer, multiple MarkIt instances share one `Highlight` per `highlightName`. They do not overwrite each other when several highlighters are on the page. Use a custom `highlightName` to register a separate set of highlights (e.g. for different styles).
+:::
+
+::: info Browser support for Highlight API
+The `highlight-api` (and `auto`) renderer uses the CSS Custom Highlight API. It is supported in **Chrome 105+**, **Edge 105+**, **Safari 17.2+**, and **Firefox 140+**. In older or unsupported environments, use `renderer: 'dom'` or rely on `auto` to fall back to DOM wrapping.
+:::
+
 ## Callbacks
 
 | Callback  | Signature                                               | Description                        |

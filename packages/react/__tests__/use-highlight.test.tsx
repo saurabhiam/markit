@@ -88,6 +88,35 @@ describe('useHighlight', () => {
     const marks = container.querySelectorAll('mark');
     expect(marks).toHaveLength(2); // 2 instances of "hello", not 4
   });
+
+  it('re-applies when contentKey changes (dynamic content, no garbled text)', () => {
+    function DynamicContentComponent() {
+      const [text, setText] = useState('Hello');
+      const ref = useHighlight('o', { contentKey: text, renderer: 'dom' });
+      return (
+        <div>
+          <button onClick={() => setText('World')}>change</button>
+          <div ref={ref}>
+            <span key={text}>{text}</span>
+          </div>
+        </div>
+      );
+    }
+
+    const { container } = render(<DynamicContentComponent />);
+    expect(container.querySelectorAll('mark')).toHaveLength(1);
+    expect(container.querySelector('mark')!.textContent).toBe('o');
+
+    act(() => {
+      container.querySelector('button')!.click();
+    });
+
+    const innerDiv = container.querySelector('mark')?.closest('div');
+    expect(innerDiv!.textContent).toBe('World');
+    const marks = innerDiv!.querySelectorAll('mark');
+    expect(marks).toHaveLength(1);
+    expect(marks[0]!.textContent).toBe('o');
+  });
 });
 
 describe('Highlighter component', () => {
@@ -128,5 +157,60 @@ describe('Highlighter component', () => {
     const div = container.firstElementChild as HTMLElement;
     expect(div.classList.contains('search-results')).toBe(true);
     expect(div.style.padding).toBe('10px');
+  });
+
+  it('when contentKey changes: remounts content and re-applies highlight (no garbled text)', () => {
+    function WithContentKey() {
+      const [title, setTitle] = useState('Hello');
+      return (
+        <div>
+          <button onClick={() => setTitle('World')}>change</button>
+          <Highlighter term="o" contentKey={title} renderer="dom">
+            {title}
+          </Highlighter>
+        </div>
+      );
+    }
+
+    const { container } = render(<WithContentKey />);
+    expect(container.querySelectorAll('mark')).toHaveLength(1);
+
+    act(() => {
+      container.querySelector('button')!.click();
+    });
+
+    const wrapper = container.querySelector('mark')?.closest('div');
+    expect(wrapper!.textContent).toBe('World');
+    const marks = wrapper!.querySelectorAll('mark');
+    expect(marks).toHaveLength(1);
+    expect(marks[0]!.textContent).toBe('o');
+  });
+
+  it('supports contentKey as array: re-applies when any key changes', () => {
+    function WithContentKeyArray() {
+      const [a, setA] = useState('Hello');
+      const [b, setB] = useState('x');
+      return (
+        <div>
+          <button onClick={() => setA('World')}>change a</button>
+          <Highlighter term="o" contentKey={[a, b]} renderer="dom">
+            {a} — {b}
+          </Highlighter>
+        </div>
+      );
+    }
+
+    const { container } = render(<WithContentKeyArray />);
+    expect(container.querySelectorAll('mark')).toHaveLength(1);
+
+    act(() => {
+      container.querySelector('button')!.click();
+    });
+
+    const wrapper = container.querySelector('mark')?.closest('div');
+    expect(wrapper!.textContent).toBe('World — x');
+    const marks = wrapper!.querySelectorAll('mark');
+    expect(marks).toHaveLength(1);
+    expect(marks[0]!.textContent).toBe('o');
   });
 });

@@ -86,7 +86,7 @@ instance.destroy();
 
 MarkIt uses a **dual-engine architecture**:
 
-1. **CSS Custom Highlight API** (default) — Creates `Range` objects and registers them with the browser's highlight registry. Styled via `::highlight()`. Zero DOM mutations.
+1. **CSS Custom Highlight API** (default) — Creates `Range` objects and registers them with the browser's highlight registry. Styled via `::highlight()`. Zero DOM mutations. Supported in Chrome 105+, Edge 105+, Safari 17.2+, Firefox 140+; unsupported browsers fall back to the DOM renderer with `renderer: 'auto'`.
 
 2. **DOM Range Renderer** (fallback) — Splits text nodes and wraps matches in `<mark>` elements using the Range API. Never uses `innerHTML`.
 
@@ -98,6 +98,8 @@ instance.mark('term', { renderer: 'dom' }); // Force DOM wrapping
 instance.mark('term', { renderer: 'overlay' }); // Force overlay positioning
 instance.mark('term', { renderer: 'auto' }); // Auto-detect (default)
 ```
+
+**How `auto` works:** When `renderer` is `'auto'` (the default), MarkIt checks at runtime whether the CSS Custom Highlight API is available (`CSS` and `CSS.highlights`). If yes, it uses the Highlight API renderer (zero DOM mutations). If not — for example in older browsers or in Node (e.g. jsdom) — it uses the DOM wrapping renderer. The chosen renderer is reused for the lifetime of that instance until you call with a different `renderer` or destroy it.
 
 ## Styling Highlights
 

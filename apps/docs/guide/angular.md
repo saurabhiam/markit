@@ -53,11 +53,18 @@ export class SearchResultsComponent {
 
 ### Directive Inputs
 
-| Input             | Type                     | Description           |
-| ----------------- | ------------------------ | --------------------- |
-| `markitHighlight` | `string \| string[]`     | Search term(s)        |
-| `markitOptions`   | `Partial<MarkitOptions>` | Configuration options |
-| `markitPlugins`   | `MarkitPlugin[]`         | Plugins to register   |
+| Input              | Type                                       | Description                                                                  |
+| ------------------ | ------------------------------------------ | ---------------------------------------------------------------------------- |
+| `markitHighlight`  | `string \| string[]`                       | Search term(s)                                                               |
+| `markitOptions`    | `Partial<MarkitOptions>`                   | Configuration options                                                        |
+| `markitPlugins`    | `MarkitPlugin[]`                           | Plugins to register                                                          |
+| `markitContentKey` | `string \| number \| (string \| number)[]` | When content is dynamic, pass value(s) that change with content (see below). |
+
+### Dynamic content
+
+When the host element's content is bound to a signal or other dynamic source and can change (e.g. tab body, list of results), pass `[markitContentKey]` so the directive unmarks before and re-applies after content updates. Use the same value(s) that identify the current content — for example, the active tab id or the current list data. Without `markitContentKey`, the previous highlight state can overlap the new DOM and produce garbled text. The directive runs cleanup in `ngOnChanges` when the content key changes, then re-applies in `ngAfterViewChecked` after the view has updated.
+
+For the full Angular highlight cycle, see [Framework lifecycles](./framework-lifecycles).
 
 ### Callbacks via Options
 

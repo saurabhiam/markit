@@ -1,4 +1,5 @@
 import { useRef, useEffect, useMemo } from 'react';
+import type { Key } from 'react';
 import { markit, type MarkitInstance, type MarkitOptions, type MarkitPlugin } from '@markitjs/core';
 
 export interface UseHighlightOptions extends Partial<MarkitOptions> {
@@ -11,6 +12,14 @@ export interface UseHighlightOptions extends Partial<MarkitOptions> {
    * - `'layout'` — runs before paint via useLayoutEffect. Use with DOM renderer to avoid flash.
    */
   timing?: 'effect' | 'layout';
+
+  /**
+   * Like useEffect deps: when this value (or any value in the array) changes, the effect
+   * re-runs and re-applies highlight. Pass the same value(s) as your content so that when
+   * content updates you get correct highlights instead of garbled text. Omit for static content.
+   * Single: contentKey={value}. Multiple: contentKey={[value1, value2]}.
+   */
+  contentKey?: Key | Key[];
 }
 
 /**
@@ -21,6 +30,11 @@ export interface UseHighlightOptions extends Partial<MarkitOptions> {
  * - StrictMode (cleanup runs before re-invocation, unmark is idempotent)
  * - Concurrent rendering (effects only run on committed renders)
  * - Next.js SSR (useEffect doesn't run on server or during hydration)
+ *
+ * When content is dynamic (e.g. state or props), pass options.contentKey so the effect
+ * re-runs when it changes. For dynamic content the container's children should be keyed
+ * by contentKey (e.g. via <Highlighter contentKey={value}>). When contentKey is omitted,
+ * content is treated as static.
  *
  * @example
  * ```tsx
@@ -40,6 +54,13 @@ export function useHighlight<T extends HTMLElement = HTMLElement>(
   // Memoize options to avoid unnecessary effect re-runs.
   // Users should pass a stable options object or useMemo it themselves.
   const optsMemo = useStableOptions(options);
+
+  // Stable dependency for contentKey so effect only runs when value(s) actually change (like useEffect deps).
+  const contentKeyDep = useMemo(() => {
+    const key = options?.contentKey;
+    if (key === undefined) return undefined;
+    return Array.isArray(key) ? JSON.stringify(key) : key;
+  }, [options?.contentKey]);
 
   useEffect(() => {
     const el = ref.current;
@@ -66,7 +87,7 @@ export function useHighlight<T extends HTMLElement = HTMLElement>(
         instanceRef.current = null;
       }
     };
-  }, [term, optsMemo]);
+  }, [term, optsMemo, contentKeyDep]);
 
   return ref;
 }

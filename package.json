@@ -21,6 +21,7 @@
     "docs:dev": "turbo run dev --filter=@markitjs/docs",
     "docs:build": "turbo run build --filter=@markitjs/docs",
     "bench": "turbo run bench",
+    "size": "./scripts/bundle-size.sh",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "publish-packages": "changeset publish --no-git-tag",
@@ -29,13 +30,13 @@
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.6.0",
-    "@changesets/cli": "^2",
-    "@vitest/browser": "^3",
-    "jsdom": "^26",
-    "prettier": "^3",
-    "turbo": "^2",
-    "typescript": "^5.7",
-    "vitest": "^3"
+    "@changesets/cli": "^2.30.0",
+    "@vitest/browser": "^3.2.4",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.8.1",
+    "turbo": "^2.8.15",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=20"

@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { markit } from '../src/markit.js';
+import { isHighlightApiSupported } from '../src/engines/highlight-api.js';
+
+const hasHighlightApi = () =>
+  typeof CSS !== 'undefined' && 'highlights' in CSS && isHighlightApiSupported();
 
 describe('markit instance', () => {
   let container: HTMLElement;
@@ -217,5 +221,60 @@ describe('markit instance', () => {
 
       instance.destroy();
     });
+  });
+
+  describe('highlight-api: multiple instances share one Highlight per name', () => {
+    it.skipIf(!hasHighlightApi())('two instances with default name both show highlights', () => {
+      const root1 = document.createElement('div');
+      root1.innerHTML = '<p>hello</p>';
+      document.body.appendChild(root1);
+      const root2 = document.createElement('div');
+      root2.innerHTML = '<p>hello</p>';
+      document.body.appendChild(root2);
+
+      const instance1 = markit(root1);
+      const instance2 = markit(root2);
+      instance1.mark('hello', { renderer: 'highlight-api' });
+      instance2.mark('hello', { renderer: 'highlight-api' });
+
+      expect(instance1.getMatches()).toHaveLength(1);
+      expect(instance2.getMatches()).toHaveLength(1);
+      const highlight = CSS.highlights.get('markit-highlight');
+      expect(highlight).toBeTruthy();
+      expect(highlight!.size).toBe(2);
+
+      instance1.destroy();
+      instance2.destroy();
+      document.body.removeChild(root1);
+      document.body.removeChild(root2);
+    });
+
+    it.skipIf(!hasHighlightApi())(
+      'two instances with same custom highlightName both show highlights',
+      () => {
+        const root1 = document.createElement('div');
+        root1.innerHTML = '<p>world</p>';
+        document.body.appendChild(root1);
+        const root2 = document.createElement('div');
+        root2.innerHTML = '<p>world</p>';
+        document.body.appendChild(root2);
+
+        const instance1 = markit(root1);
+        const instance2 = markit(root2);
+        instance1.mark('world', { renderer: 'highlight-api', highlightName: 'custom-name' });
+        instance2.mark('world', { renderer: 'highlight-api', highlightName: 'custom-name' });
+
+        expect(instance1.getMatches()).toHaveLength(1);
+        expect(instance2.getMatches()).toHaveLength(1);
+        const highlight = CSS.highlights.get('custom-name');
+        expect(highlight).toBeTruthy();
+        expect(highlight!.size).toBe(2);
+
+        instance1.destroy();
+        instance2.destroy();
+        document.body.removeChild(root1);
+        document.body.removeChild(root2);
+      },
+    );
   });
 });

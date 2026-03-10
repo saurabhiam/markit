@@ -68,7 +68,7 @@ function SearchResults({ query }: { query: string }) {
 }
 ```
 
-Next.js App Router: add `"use client"` at the top of any file that uses the hook or `<Highlighter>`. SSR-safe — no hydration mismatch.
+Next.js App Router: add `"use client"` at the top of any file that uses the hook or `<Highlighter>`. SSR-safe — no hydration mismatch. For dynamic content, pass `contentKey` so highlights re-apply when content changes (see [Framework lifecycles](apps/docs/guide/framework-lifecycles.md)).
 
 ### Angular
 
@@ -98,7 +98,7 @@ export class SearchComponent {
 }
 ```
 
-Runs outside NgZone. Compatible with OnPush, Signals, and zoneless apps.
+Runs outside NgZone. Compatible with OnPush, Signals, and zoneless apps. For dynamic content, pass `[markitContentKey]` so the directive re-applies highlights after content updates (see [Framework lifecycles](apps/docs/guide/framework-lifecycles.md)).
 
 ## Rendering Engines
 
@@ -172,6 +172,8 @@ bun install
 | `bun run bench`      | Run full Playwright performance benchmarks |
 | `bun run clean`      | Clean all build artifacts                  |
 
+**Documentation:** [Framework lifecycles](apps/docs/guide/framework-lifecycles.md) — how React and Angular bindings run and re-apply highlights over time.
+
 ### Testing
 
 **Unit & integration tests** (127 tests across core, angular, react):
@@ -198,7 +200,7 @@ The core engine follows a pipeline:
 3. **Resolver** — Binary search maps virtual string offsets back to DOM text nodes and character offsets
 4. **Renderer** — Applies highlights using the selected engine (Highlight API / DOM / Overlay)
 
-Plugin hooks (`beforeSearch`, `afterMatch`, `beforeRender`, `afterRender`) allow interception at each stage.
+Plugin hooks (`beforeSearch`, `afterMatch`, `beforeRender`, `afterRender`) allow interception at each stage. Multiple MarkIt instances can coexist on the same page; with the CSS Highlight API (or `auto`), instances share one `Highlight` per `highlightName`, so they do not overwrite each other.
 
 ## Performance
 

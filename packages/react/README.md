@@ -61,15 +61,17 @@ const ref = useHighlight<HTMLDivElement>(term, {
   // All @markitjs/core options, plus:
   plugins: [], // MarkitPlugin[]
   timing: 'effect', // 'effect' (default) | 'layout'
+  contentKey: value, // optional: re-run when content identity changes
 });
 ```
 
-| Option    | Type                   | Description                                                                                            |
-| --------- | ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| `timing`  | `'effect' \| 'layout'` | `'effect'` runs after paint (SSR-safe). `'layout'` runs before paint (avoids flash with DOM renderer). |
-| `plugins` | `MarkitPlugin[]`       | Plugins to register with the core instance.                                                            |
+| Option       | Type                   | Description                                                                                            |
+| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `timing`     | `'effect' \| 'layout'` | `'effect'` runs after paint (SSR-safe). `'layout'` runs before paint (avoids flash with DOM renderer). |
+| `plugins`    | `MarkitPlugin[]`       | Plugins to register with the core instance.                                                            |
+| `contentKey` | `Key \| Key[]`         | When content is dynamic, pass value(s) that change with content so the effect re-runs and re-applies.  |
 
-All other options are passed through to `@markitjs/core`'s `mark()` method.
+All other options are passed through to `@markitjs/core`'s `mark()` method. For dynamic content (e.g. state or props), pass `contentKey` so highlights re-apply when content changes and avoid garbled text. See [Framework lifecycles](../../apps/docs/guide/framework-lifecycles.md) for how the React highlight cycle works.
 
 ### `Highlighter`
 
@@ -81,6 +83,7 @@ Declarative component that wraps children and highlights matching text.
   as="div" // Container element tag (default: 'div')
   className="my-class" // Container CSS class
   style={{ padding: 16 }} // Container inline styles
+  contentKey={contentId} // optional: for dynamic content
   caseSensitive={false} // Any @markitjs/core option
   renderer="auto"
 />

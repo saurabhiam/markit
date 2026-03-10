@@ -37,14 +37,18 @@ instance.destroy();
 
 The library ships with three rendering strategies, selectable via the `renderer` option:
 
-| Engine         | Option            | DOM Mutations | Browser Support   |
-| -------------- | ----------------- | ------------- | ----------------- |
-| CSS Highlight  | `'highlight-api'` | None          | Chrome 105+, Edge |
-| DOM Wrapping   | `'dom'`           | Yes           | All browsers      |
-| Overlay        | `'overlay'`       | Minimal       | All browsers      |
-| Auto (default) | `'auto'`          | Varies        | Feature-detected  |
+| Engine         | Option            | DOM Mutations | Browser Support                                    |
+| -------------- | ----------------- | ------------- | -------------------------------------------------- |
+| CSS Highlight  | `'highlight-api'` | None          | Chrome 105+, Edge 105+, Safari 17.2+, Firefox 140+ |
+| DOM Wrapping   | `'dom'`           | Yes           | All browsers                                       |
+| Overlay        | `'overlay'`       | Minimal       | All browsers                                       |
+| Auto (default) | `'auto'`          | Varies        | Feature-detected                                   |
 
 `auto` prefers the CSS Custom Highlight API when available, falling back to DOM wrapping.
+
+## Multiple instances
+
+With the CSS Highlight API (or `auto`), multiple MarkIt instances share one `Highlight` per registry name. They do not overwrite each other when several highlighters are on the page. Use the `highlightName` option to register under a different name (e.g. for separate highlight styles or isolation).
 
 ## Options
 
