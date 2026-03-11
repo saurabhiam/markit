@@ -33,7 +33,7 @@ There is no “Version PR” — you never run `bun run changeset` in PRs. Prepa
 
 ## Versioning Strategy
 
-Packages use **independent versioning** — each has its own version. The `.changeset/config.json` has no `fixed` group; `updateInternalDependencies: "patch"` means when `@markitjs/core` is bumped, dependents (`@markitjs/react`, `@markitjs/angular`) get a patch bump automatically.
+Packages use **independent versioning** — each has its own version. The `.changeset/config.json` has no `fixed` group; `updateInternalDependencies: "patch"` means when `@markitjs/core` is bumped, dependents (`@markitjs/react`, `@markitjs/angular`) get a patch bump automatically. The repo’s config also sets `ignore: ["@markitjs/docs", "@markitjs/e2e-bench"]` so those apps are not versioned by Changesets.
 
 ### Semantic Versioning
 
@@ -141,7 +141,7 @@ The workflow will:
 - Delete the **single** GitHub Release for that release tag.
 - Delete the **release tag** and all **package tags** that were created for that release.
 - Unpublish (or deprecate) those **specific package versions** on npm.
-- Open a PR that **reverts** the merge commit of the release PR (so `main` goes back to the pre-release versions).
+- Open a PR that **reverts** the merge commit of the release PR (using `git revert -m 1` so the merge is reverted to main’s pre-merge state; so `main` goes back to the pre-release versions).
 
 Only repo admins can run Rollback.
 
@@ -224,9 +224,9 @@ The workflow found no changes under any package since the last release tag, or e
 
 The release tag you entered was already created (e.g. a previous Finalize run). Use a new tag (e.g. increment the sequence: `release-2025-03-10-02`) or, if you already finalized and only need to publish, run **Publish Release** instead.
 
-### Publish: “No release found for tag”
+### Publish: “No release found for tag” / “No draft release found”
 
-You entered a release tag that was never finalized. Run **Finalize Release** first (after merging the release PR), then run **Publish Release** with the same release tag. Ensure **DRAFT_RELEASE_PAT** is set (GitHub’s default token does not see drafts).
+You entered a release tag that was never finalized, or the workflow cannot see the draft. Run **Finalize Release** first (after merging the release PR), then run **Publish Release** with the same release tag. Ensure **DRAFT_RELEASE_PAT** is set (GitHub’s default token does not list draft releases; the workflow finds the release by filtering the list for that tag and `draft: true`).
 
 ### Publish failed (tests, build, npm)
 
@@ -246,7 +246,7 @@ Before the first publish:
 
 - [ ] npm org `@markitjs` exists, token created, `NPM_TOKEN` in GitHub Environment `npm-publish`
 - [ ] `DRAFT_RELEASE_PAT` added in repo Secrets (read+write releases)
-- [ ] `.changeset/config.json` has no `fixed` group and has `updateInternalDependencies: "patch"` and the ignore list
+- [ ] `.changeset/config.json` has no `fixed` group, has `updateInternalDependencies: "patch"`, and has `ignore: ["@markitjs/docs", "@markitjs/e2e-bench"]` (see the file in the repo)
 
 To do the first release:
 
