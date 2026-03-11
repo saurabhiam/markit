@@ -160,7 +160,13 @@ jobs:
               ...params,
             });
             const fs = require('fs');
-            fs.writeFileSync('release-notes-body.md', data.body || '');
+            let body = data.body || '';
+            const base = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
+            const changelogLink = prevTag
+              ? `${base}/compare/${prevTag}...${releaseTag}`
+              : `${base}/commits/${releaseTag}`;
+            body = body.replace(/Full Changelog: https:\/\/[^\s)]+/i, `Full Changelog: ${changelogLink}`);
+            fs.writeFileSync('release-notes-body.md', body);
 
       - name: Create changeset file
         if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true'
@@ -228,7 +234,7 @@ jobs:
             .changeset/
           git status
           git commit -m "chore: version packages" || exit 0
-          git push -u origin "$BRANCH"
+          git push --force -u origin "$BRANCH"
 
       - name: Open pull request
         if: steps.changed_packages.outputs.has_changes == 'true' && steps.to_bump.outputs.has_bump == 'true' && steps.version_changed.outputs.changed == 'true'

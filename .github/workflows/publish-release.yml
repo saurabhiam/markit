@@ -48,18 +48,16 @@ jobs:
               core.setFailed('Invalid release_tag. Use format release-YYYY-MM-DD-NN (e.g. release-2025-03-10-01).');
               return;
             }
+            // GET /repos/owner/repo/releases — /releases/tags/<tag> does not return draft releases
             const { data: releases } = await github.rest.repos.listReleases({
               owner: context.repo.owner,
               repo: context.repo.repo,
               per_page: 100,
             });
-            const release = releases.find(r => r.tag_name === releaseTag);
+            const release = releases.find(r => r.tag_name === releaseTag && r.draft);
             if (!release) {
-              core.setFailed(`No release found for tag ${releaseTag}. Run Finalize Release first (after merging the release PR).`);
+              core.setFailed(`No draft release found for tag ${releaseTag}. Run Finalize Release first. If you did, set DRAFT_RELEASE_PAT (default token cannot list drafts).`);
               return;
-            }
-            if (!release.draft) {
-              console.log(`Release ${releaseTag} is already published.`);
             }
 
       - uses: actions/checkout@v4
@@ -127,16 +125,22 @@ jobs:
       - name: Upload assets to GitHub Release
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.DRAFT_RELEASE_PAT }}
+          github-token: ${{ secrets.DRAFT_RELEASE_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const releaseTag = '${{ inputs.release_tag }}';
             const fs = require('fs');
             const path = require('path');
-            const { data: release } = await github.rest.repos.getReleaseByTag({
+            // GET /repos/owner/repo/releases — /releases/tags/<tag> does not return draft releases
+            const { data: releases } = await github.rest.repos.listReleases({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag: releaseTag,
+              per_page: 100,
             });
+            const release = releases.find(r => r.tag_name === releaseTag && r.draft);
+            if (!release) {
+              core.setFailed(`No draft release found for tag ${releaseTag}. Set DRAFT_RELEASE_PAT so draft releases are visible.`);
+              return;
+            }
             const files = fs.readdirSync('.').filter(f => f.endsWith('.tgz') || (f.endsWith('.zip') && f.includes('source')));
             for (const file of files) {
               const data = fs.readFileSync(file);
@@ -153,16 +157,18 @@ jobs:
       - name: Publish draft GitHub Release
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.DRAFT_RELEASE_PAT }}
+          github-token: ${{ secrets.DRAFT_RELEASE_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const releaseTag = '${{ inputs.release_tag }}';
-            const { data: release } = await github.rest.repos.getReleaseByTag({
+            // GET /repos/owner/repo/releases — /releases/tags/<tag> does not return draft releases
+            const { data: releases } = await github.rest.repos.listReleases({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag: releaseTag,
+              per_page: 100,
             });
-            if (!release.draft) {
-              console.log(`Release ${releaseTag} is already published.`);
+            const release = releases.find(r => r.tag_name === releaseTag && r.draft);
+            if (!release) {
+              core.setFailed(`No draft release found for tag ${releaseTag}. Set DRAFT_RELEASE_PAT so draft releases are visible.`);
               return;
             }
             await github.rest.repos.updateRelease({

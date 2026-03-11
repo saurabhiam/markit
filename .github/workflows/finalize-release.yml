@@ -41,7 +41,7 @@ jobs:
         run: |
           TAG="${{ inputs.release_tag }}"
           if ! echo "$TAG" | grep -qE '^release-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}$'; then
-            echo "::error::Invalid release_tag. Use format release-YYYY-MM-DD-NN (e.g. release-2025-03-10-01)"
+            echo "::error::Invalid release_tag. Use format release-YYYY-MM-DD-NN (e.g. release-2026-03-10-01)"
             exit 1
           fi
 
@@ -129,7 +129,13 @@ jobs:
               ...params,
             });
             const fs = require('fs');
-            fs.writeFileSync('release-notes-body.md', data.body || '');
+            let body = data.body || '';
+            const base = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
+            const changelogLink = prevTag
+              ? `${base}/compare/${prevTag}...${releaseTag}`
+              : `${base}/commits/${releaseTag}`;
+            body = body.replace(/Full Changelog: https:\/\/[^\s)]+/i, `Full Changelog: ${changelogLink}`);
+            fs.writeFileSync('release-notes-body.md', body);
 
       - name: Build release body with package versions
         id: release_body
