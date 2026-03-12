@@ -20,6 +20,59 @@ MarkIt uses [Changesets](https://github.com/changesets/changesets) for versionin
 
 There is no “Version PR” — you never run `bun run changeset` in PRs. Prepare creates the changeset when you run it.
 
+### Release flow (diagram)
+
+One release event: Prepare (per-package bumps) → merge PR → Finalize (one release tag + package tags for bumped only) → Publish (npm + assets on the single GitHub Release).
+
+```mermaid
+sequenceDiagram
+  participant Maintainer
+  participant Prepare
+  participant Finalize
+  participant Publish
+  participant GitHub
+  participant npm
+
+  Maintainer->>Prepare: Run Prepare (per-package bump)
+  Prepare->>Prepare: Detect changed packages from git diff
+  Prepare->>Prepare: Generate changeset with selected bump type per package
+  Prepare->>Prepare: version-packages (bumps selected + dependents)
+  Prepare->>GitHub: Push branch + open PR
+  Maintainer->>GitHub: Merge release PR
+  Maintainer->>Finalize: Run Finalize with release tag
+  Finalize->>Finalize: Create release tag + package tags for bumped only
+  Finalize->>Finalize: Generate release notes (prev release tag to current)
+  Finalize->>GitHub: Create 1 draft Release with package version list
+  Maintainer->>Publish: Run Publish with release tag
+  Publish->>Publish: Checkout release tag, build, test
+  Publish->>npm: changeset publish (each package at its version)
+  Publish->>Publish: npm pack x3 + source zip
+  Publish->>GitHub: Upload 4 assets, publish Release
+```
+
+**Release tag vs package tags:**
+
+- **One release tag** per release: `release-YYYY-MM-DD-NN` (e.g. `release-2025-03-10-01`). This is the ref for the release and the single GitHub Release.
+- **Package tags** (`@markitjs/core@1.0.1`, etc.) are created **only for packages whose version increased** in that release. Unchanged packages get no new tag.
+
+```mermaid
+flowchart LR
+  subgraph release [One release event]
+    RT[release-YYYY-MM-DD-NN]
+  end
+  subgraph tags [Tags created]
+    RT --> P1{core bumped?}
+    P1 -->|Yes| T1["@markitjs/core@x.y.z"]
+    P1 -->|No| N1[no tag]
+    RT --> P2{react bumped?}
+    P2 -->|Yes| T2["@markitjs/react@x.y.z"]
+    P2 -->|No| N2[no tag]
+    RT --> P3{angular bumped?}
+    P3 -->|Yes| T3["@markitjs/angular@x.y.z"]
+    P3 -->|No| N3[no tag]
+  end
+```
+
 ---
 
 ## Prerequisites (one-time setup)
@@ -272,3 +325,5 @@ To do the first release:
 | Docs                 | `.github/workflows/docs.yml`                 | Push to `main`      | Build and deploy documentation                                                                             |
 | Bundle Size          | `.github/workflows/bundle-size.yml`          | PR to `main`        | Measure bundle sizes                                                                                       |
 | Dependency Review    | `.github/workflows/dependency-review.yml`    | PR to `main`        | Block vulnerable dependencies                                                                              |
+
+**Workflow inputs:** Prepare takes per-package bump choices (none / patch / minor / major). Finalize, Publish, Rollback, and Test Publish Release all take a **release tag** (e.g. `release-2025-03-10-01`) as input — the same tag produced by Prepare’s PR and used for the single GitHub Release and its assets.
