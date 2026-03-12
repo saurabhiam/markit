@@ -1,6 +1,6 @@
 {
   "name": "@markitjs/angular",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Angular bindings for @markitjs/core text highlighting engine",
   "type": "module",
   "main": "./dist/fesm2022/markitjs-angular.mjs",
