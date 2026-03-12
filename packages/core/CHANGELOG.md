@@ -1,5 +1,14 @@
 # @markitjs/core
 
+## 1.0.3
+
+### Patch Changes
+
+- ## What's Changed
+  - chore: framework optimisations and fix types path for @markitjs/angular by @saurabhiam in https://github.com/saurabhiam/markit/pull/31
+
+  **Full Changelog**: https://github.com/saurabhiam/markit/compare/release-2026-03-12-01...release-2026-03-12-02
+
 ## 1.0.2
 
 ### Patch Changes

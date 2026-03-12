@@ -1,6 +1,6 @@
 {
   "name": "@markitjs/angular",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Angular bindings for @markitjs/core text highlighting engine",
   "type": "module",
   "main": "./dist/fesm2022/markitjs-angular.mjs",
@@ -27,7 +27,7 @@
     "tslib": "^2.8.1"
   },
   "peerDependencies": {
-    "@markitjs/core": ">=1.0.2",
+    "@markitjs/core": ">=1.0.3",
     "@angular/core": "^17.0.0 || ^18.0.0 || ^19.0.0 || ^20.0.0 || ^21.0.0",
     "@angular/common": "^17.0.0 || ^18.0.0 || ^19.0.0 || ^20.0.0 || ^21.0.0"
   },
