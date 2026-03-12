@@ -146,6 +146,8 @@ For large content areas, enable batched rendering:
 </div>
 ```
 
+**Performance tip:** For large documents or fast typing (e.g. live search), pass `debounce` and/or `batchSize` in `markitOptions`. `debounce` (ms) reduces re-index/render cycles when the term changes quickly; `batchSize` splits rendering across animation frames so the UI stays responsive. Both are supported by the core engine and work with the directive and service.
+
 ## CSS Highlight API Styling
 
 When using the default `auto` renderer on supported browsers, add this to your global styles:

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, useMemo } from 'react';
 import type { Key } from 'react';
 import { useHighlight, type UseHighlightOptions } from './use-highlight.js';
 
@@ -31,6 +31,8 @@ export interface HighlighterProps extends UseHighlightOptions {
 /**
  * Declarative React component for text highlighting.
  *
+ * Pass a stable term and stable options (e.g. useMemo) for best performance.
+ *
  * Wraps children in a container element and applies highlighting
  * based on the search term. Must be a Client Component in Next.js
  * (marked with 'use client' at the top).
@@ -60,7 +62,11 @@ export function Highlighter({
   style,
   ...options
 }: HighlighterProps) {
-  const ref = useHighlight(term, { ...options, contentKey });
+  /* Memoize so we don't pass a new object every render. useHighlight shallow-compares
+   *options internally, so listing every key here isn't required; options reference is enough.
+   */
+  const optionsForHighlight = useMemo(() => ({ ...options, contentKey }), [contentKey, options]);
+  const ref = useHighlight(term, optionsForHighlight);
 
   const fragmentKey =
     contentKey === undefined

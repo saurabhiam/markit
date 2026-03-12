@@ -65,11 +65,11 @@ const ref = useHighlight<HTMLDivElement>(term, {
 });
 ```
 
-| Option       | Type                   | Description                                                                                            |
-| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| `timing`     | `'effect' \| 'layout'` | `'effect'` runs after paint (SSR-safe). `'layout'` runs before paint (avoids flash with DOM renderer). |
-| `plugins`    | `MarkitPlugin[]`       | Plugins to register with the core instance.                                                            |
-| `contentKey` | `Key \| Key[]`         | When content is dynamic, pass value(s) that change with content so the effect re-runs and re-applies.  |
+| Option       | Type                   | Description                                                                                                                                 |
+| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `timing`     | `'effect' \| 'layout'` | `'effect'` runs after paint (SSR-safe). `'layout'` runs before paint — use with the DOM renderer to avoid a flash of unhighlighted content. |
+| `plugins`    | `MarkitPlugin[]`       | Plugins to register with the core instance.                                                                                                 |
+| `contentKey` | `Key \| Key[]`         | When content is dynamic, pass value(s) that change with content so the effect re-runs and re-applies.                                       |
 
 All other options are passed through to `@markitjs/core`'s `mark()` method. For dynamic content (e.g. state or props), pass `contentKey` so highlights re-apply when content changes and avoid garbled text. See [Framework lifecycles](../../apps/docs/guide/framework-lifecycles.md) for how the React highlight cycle works.
 
@@ -100,6 +100,11 @@ The bindings are designed to be safe across React's rendering model:
 | **Next.js SSR/hydration** | `useEffect` doesn't run on the server or during hydration |
 | **Re-renders**            | Options are shallow-compared; no work if nothing changed  |
 | **Unmount**               | `destroy()` is called in the effect cleanup               |
+
+## Performance
+
+- **Term:** A string term is already stable (same value = no extra work). When `term` is an array, the hook compares by **contents**, not reference: passing a new array with the same items (e.g. `[word1, word2]` every render) will not re-run the effect. Optionally use `useMemo` for the array if you want to avoid that internal comparison.
+- **Options:** Pass a stable options object (e.g. `useMemo(() => ({ ... }), [deps])` or a constant) so the effect does not re-run when nothing actually changed. Options are shallow-compared; a new object reference every render may trigger re-runs even when values are the same.
 
 ## Next.js Usage
 
