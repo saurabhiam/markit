@@ -30,11 +30,12 @@
     "clean": "rm -rf dist .turbo"
   },
   "peerDependencies": {
-    "@markitjs/core": ">=1.0.1",
+    "@markitjs/core": ">=1.0.2",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
+    "@markitjs/core": "workspace:*",
     "tsup": "^8",
     "typescript": "^5.7",
     "vitest": "^3",

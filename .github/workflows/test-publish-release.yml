@@ -1,10 +1,13 @@
+# Optional: set DRAFT_RELEASE_PAT (repo secret) to see draft releases.
+# Without it, only published releases are visible via the API.
+
 name: Test Publish Release
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to test (e.g. 1.0.0)'
+      release_tag:
+        description: 'Release tag to check (e.g. release-2025-03-10-01)'
         required: true
         type: string
 
@@ -15,67 +18,89 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Check version format
+      - name: Validate release tag format
         run: |
-          VERSION="${{ inputs.version }}"
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
-            echo "Invalid version format: $VERSION"
+          TAG="${{ inputs.release_tag }}"
+          if ! echo "$TAG" | grep -qE '^release-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}$'; then
+            echo "::error::Invalid release_tag. Use format release-YYYY-MM-DD-NN (e.g. release-2025-03-10-01)"
             exit 1
           fi
-          echo "Version format is valid: $VERSION"
+          echo "Release tag format is valid: $TAG"
 
-      - name: Check git tags
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check release tag exists
         run: |
-          VERSION="${{ inputs.version }}"
-          echo "Checking for tags with version $VERSION..."
+          TAG="${{ inputs.release_tag }}"
+          if git rev-parse "$TAG" 2>/dev/null; then
+            echo "✓ Release tag exists: $TAG"
+          else
+            echo "::error::Release tag $TAG not found. Run Finalize Release first."
+            exit 1
+          fi
+
+      - name: Read package versions at release tag
+        id: versions
+        run: |
+          TAG="${{ inputs.release_tag }}"
           for pkg in core react angular; do
-            TAG="@markitjs/${pkg}@${VERSION}"
-            echo "Checking tag: $TAG"
-            if git ls-remote --tags origin "$TAG" 2>/dev/null | grep -q .; then
-              echo "  ✓ Tag exists: $TAG"
+            git show "${TAG}:packages/${pkg}/package.json" > "/tmp/${pkg}.json" 2>/dev/null || true
+            ver=$(node -p "require('/tmp/${pkg}.json').version" 2>/dev/null || echo "")
+            echo "${pkg}=${ver}" >> $GITHUB_OUTPUT
+          done
+          CORE=$(node -p "require('/tmp/core.json').version" 2>/dev/null || echo "")
+          REACT=$(node -p "require('/tmp/react.json').version" 2>/dev/null || echo "")
+          ANGULAR=$(node -p "require('/tmp/angular.json').version" 2>/dev/null || echo "")
+          echo "core=$CORE" >> $GITHUB_OUTPUT
+          echo "react=$REACT" >> $GITHUB_OUTPUT
+          echo "angular=$ANGULAR" >> $GITHUB_OUTPUT
+          echo "Package versions at $TAG: core=$CORE react=$REACT angular=$ANGULAR"
+
+      - name: Check package tags exist (bumped packages only)
+        run: |
+          TAG="${{ inputs.release_tag }}"
+          CORE="${{ steps.versions.outputs.core }}"
+          REACT="${{ steps.versions.outputs.react }}"
+          ANGULAR="${{ steps.versions.outputs.angular }}"
+          for pkg_ver in "@markitjs/core@${CORE}" "@markitjs/react@${REACT}" "@markitjs/angular@${ANGULAR}"; do
+            ver="${pkg_ver#*@}"
+            if [ -z "$ver" ] || [ "$ver" = "$pkg_ver" ]; then
+              continue
+            fi
+            if git rev-parse "$pkg_ver" 2>/dev/null; then
+              echo "  ✓ Tag exists: $pkg_ver"
             else
-              echo "  ✗ Tag NOT found: $TAG"
+              echo "  ✗ Tag NOT found: $pkg_ver"
             fi
           done
 
-      - name: Check releases via GitHub API
+      - name: Check GitHub Release (single release per tag)
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.DRAFT_RELEASE_PAT || github.token }}
           script: |
-            const version = '${{ inputs.version }}';
-            const packages = ['@markitjs/core', '@markitjs/react', '@markitjs/angular'];
-
-            console.log('Checking releases for version:', version);
-
-            // List all releases
+            const releaseTag = '${{ inputs.release_tag }}';
             const { data: releases } = await github.rest.repos.listReleases({
               owner: context.repo.owner,
               repo: context.repo.repo,
               per_page: 100,
             });
-
-            console.log('Total releases found:', releases.length);
-
-            for (const pkg of packages) {
-              const tagName = `${pkg}@${version}`;
-              const release = releases.find(r => r.tag_name === tagName);
-              
-              if (release) {
-                console.log(`✓ Release found for ${tagName}:`);
-                console.log(`  - draft: ${release.draft}`);
-                console.log(`  - published: ${!release.draft}`);
-                console.log(`  - html_url: ${release.html_url}`);
-              } else {
-                console.log(`✗ No release found for ${tagName}`);
-              }
+            const release = releases.find(r => r.tag_name === releaseTag);
+            if (!release) {
+              core.warning(`No release found for tag ${releaseTag}. Run Finalize Release first. (Use DRAFT_RELEASE_PAT repo secret to see draft releases.)`);
+              return;
             }
-
-            // Also list all unique tags
-            console.log('\nAll release tags:');
-            for (const r of releases) {
-              console.log(`  - ${r.tag_name} (draft: ${r.draft})`);
-            }
+            console.log(`✓ Release found for ${releaseTag}:`);
+            console.log(`  - draft: ${release.draft}`);
+            console.log(`  - published: ${!release.draft}`);
+            console.log(`  - html_url: ${release.html_url}`);
+            console.log('\nAll release tags (sample):');
+            releases.slice(0, 15).forEach(r => console.log(`  - ${r.tag_name} (draft: ${r.draft})`));
 
       - name: Summary
         run: |
-          echo "Test complete. Check logs above for results."
+          echo "Test complete. Release tag: ${{ inputs.release_tag }}"
+          echo "Package versions: core=${{ steps.versions.outputs.core }} react=${{ steps.versions.outputs.react }} angular=${{ steps.versions.outputs.angular }}"
+          echo "Check logs above for tag and release status."

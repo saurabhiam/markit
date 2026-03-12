@@ -215,7 +215,7 @@ Typical real-browser results (M1 MacBook, Chrome):
 
 ## Releasing
 
-MarkIt uses [Changesets](https://github.com/changesets/changesets) with GitHub Actions for automated releases. All packages are versioned together (fixed versioning).
+MarkIt uses [Changesets](https://github.com/changesets/changesets) with GitHub Actions for automated releases. Packages use **independent versioning** (each has its own version). Releases are keyed by a **release tag** (e.g. `release-2025-03-10-01`); one GitHub Release per release with package tarballs and source zip.
 
 See [RELEASING.md](RELEASING.md) for the full release guide.
 
