@@ -76,6 +76,11 @@ describe('useHighlight', () => {
     expect(container.querySelectorAll('mark')).toHaveLength(2);
   });
 
+  it('with timing layout: runs highlight in layout phase (useLayoutEffect)', () => {
+    const { container } = render(<TestComponent term="hello" options={{ timing: 'layout' }} />);
+    expect(container.querySelectorAll('mark')).toHaveLength(2);
+  });
+
   it('is safe in StrictMode (no duplicate highlights)', () => {
     const { container } = render(
       <StrictMode>

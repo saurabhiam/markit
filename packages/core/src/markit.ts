@@ -35,6 +35,10 @@ const DEFAULT_OPTIONS: MarkitOptions = {
   batchSize: 0,
   debug: false,
 };
+// Prevent accidental mutation; merges use spread and never modify this.
+if (typeof Object.freeze === 'function') {
+  Object.freeze(DEFAULT_OPTIONS);
+}
 
 /**
  * Create a MarkIt instance bound to a root DOM element.
@@ -233,6 +237,7 @@ class MarkitCore implements MarkitInstance {
 
     // Batched path: pre-sort in reverse document order for DOM safety,
     // then yield between batches via requestIdleCallback / rAF.
+    // Copy+sort only here; synchronous path passes resolved through unchanged.
     if (opts.debug) console.time('[markit] render (batched)');
 
     const sorted = [...resolved].sort((a, b) => b.match.start - a.match.start);

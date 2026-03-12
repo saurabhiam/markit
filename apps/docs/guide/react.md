@@ -49,6 +49,7 @@ function SearchResults({ query }: { query: string }) {
 ```tsx
 const ref = useHighlight(term, {
   renderer: 'dom', // or 'highlight-api', 'overlay', 'auto'
+  timing: 'effect', // 'layout' runs before paint — use with DOM renderer to avoid flash
   caseSensitive: false,
   accuracy: 'exactly',
   ignoreDiacritics: true,
@@ -146,7 +147,7 @@ When the `term` or `options` change, the effect:
 2. Creates a new instance
 3. Applies new highlights
 
-The options object is shallow-compared to avoid unnecessary effect re-runs.
+**Term** is stabilized when it's an array: the effect re-runs only when the array's contents change, not when a new array reference with the same contents is passed. **Options** are shallow-compared to avoid unnecessary effect re-runs. For best performance, pass a stable term (e.g. `useMemo` for arrays) and stable options (e.g. `useMemo` for the options object).
 
 ## Batched Rendering
 

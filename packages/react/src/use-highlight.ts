@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import type { Key } from 'react';
 import { markit, type MarkitInstance, type MarkitOptions, type MarkitPlugin } from '@markitjs/core';
 
@@ -25,6 +25,8 @@ export interface UseHighlightOptions extends Partial<MarkitOptions> {
 /**
  * React hook for text highlighting. Returns a ref to attach to
  * the container element.
+ *
+ * Pass a stable term (e.g. useMemo for arrays) and stable options for best performance.
  *
  * Safe for:
  * - StrictMode (cleanup runs before re-invocation, unmark is idempotent)
@@ -55,6 +57,12 @@ export function useHighlight<T extends HTMLElement = HTMLElement>(
   // Users should pass a stable options object or useMemo it themselves.
   const optsMemo = useStableOptions(options);
 
+  // Stable dependency for term so effect does not re-run when parent passes a new array reference with same contents.
+  const termDep = useMemo(
+    () => (Array.isArray(term) ? term.filter(Boolean).join('\0') : term),
+    [Array.isArray(term) ? JSON.stringify(term.filter(Boolean)) : term],
+  );
+
   // Stable dependency for contentKey so effect only runs when value(s) actually change (like useEffect deps).
   const contentKeyDep = useMemo(() => {
     const key = options?.contentKey;
@@ -63,6 +71,7 @@ export function useHighlight<T extends HTMLElement = HTMLElement>(
   }, [options?.contentKey]);
 
   useEffect(() => {
+    if (optsMemo?.timing === 'layout') return;
     const el = ref.current;
     if (!el) return;
 
@@ -87,7 +96,34 @@ export function useHighlight<T extends HTMLElement = HTMLElement>(
         instanceRef.current = null;
       }
     };
-  }, [term, optsMemo, contentKeyDep]);
+  }, [termDep, optsMemo, contentKeyDep]);
+
+  useLayoutEffect(() => {
+    if (optsMemo?.timing !== 'layout') return;
+    const el = ref.current;
+    if (!el) return;
+
+    if (instanceRef.current) {
+      instanceRef.current.destroy();
+      instanceRef.current = null;
+    }
+
+    const normalizedTerm = Array.isArray(term) ? term.filter(Boolean) : term;
+
+    const isEmpty = Array.isArray(normalizedTerm) ? normalizedTerm.length === 0 : !normalizedTerm;
+
+    if (isEmpty) return;
+
+    instanceRef.current = markit(el, optsMemo?.plugins);
+    instanceRef.current.mark(normalizedTerm, optsMemo);
+
+    return () => {
+      if (instanceRef.current) {
+        instanceRef.current.destroy();
+        instanceRef.current = null;
+      }
+    };
+  }, [termDep, optsMemo, contentKeyDep]);
 
   return ref;
 }

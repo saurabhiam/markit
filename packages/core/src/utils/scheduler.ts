@@ -2,6 +2,11 @@
  * Schedule work in batches using requestIdleCallback (when available)
  * or requestAnimationFrame as fallback. Yields to the main thread
  * between batches to keep the UI responsive.
+ *
+ * Each batch allocates a slice of the items array; this trades one
+ * allocation per batch for a simple callback signature and safe
+ * iteration. Callers with very high batch counts could consider
+ * a (items, start, end) style API to avoid slice allocations.
  */
 export function scheduleBatched<T>(
   items: T[],

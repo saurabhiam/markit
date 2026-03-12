@@ -46,7 +46,7 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/saurabhiam/markit.git",
+    "url": "git+https://github.com/saurabhiam/markit.git",
     "directory": "packages/core"
   },
   "homepage": "https://saurabhiam.github.io/markit/",

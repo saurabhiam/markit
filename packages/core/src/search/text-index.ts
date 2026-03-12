@@ -60,6 +60,7 @@ export class TextIndex {
       offset += text.length;
     }
 
+    // Single intentional string alloc for the virtual text; join is efficient for this.
     this.virtualText = textParts.join('');
   }
 
