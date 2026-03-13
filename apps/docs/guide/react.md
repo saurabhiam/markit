@@ -18,9 +18,13 @@ bun add @markitjs/react
 pnpm add @markitjs/react
 ```
 
+```bash [yarn]
+yarn add @markitjs/react @markitjs/core
+```
+
 :::
 
-**Peer dependency:** `@markitjs/core` is required; npm 7+, pnpm, and Yarn install it automatically when you add `@markitjs/react`.
+**Peer dependencies:** `@markitjs/core` (and React) are required. npm 7+, pnpm, and bun install them automatically. **With Yarn**, install `@markitjs/core` explicitly: `yarn add @markitjs/react @markitjs/core`.
 
 ## Hook Usage
 
