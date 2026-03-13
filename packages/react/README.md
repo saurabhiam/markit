@@ -10,9 +10,11 @@ npm install @markitjs/react
 bun add @markitjs/react
 # or
 pnpm add @markitjs/react
+# or (Yarn — include @markitjs/core explicitly)
+yarn add @markitjs/react @markitjs/core
 ```
 
-**Peer dependencies:** React 18+ or 19+, and `@markitjs/core` (installed automatically by npm 7+, pnpm, and Yarn).
+**Peer dependencies:** React 18+ or 19+, and `@markitjs/core` (installed automatically by npm 7+, pnpm, and bun; with Yarn, add `@markitjs/core` explicitly: `yarn add @markitjs/react @markitjs/core`).
 
 ## Quick Start
 

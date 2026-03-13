@@ -51,7 +51,11 @@ npm install @markitjs/react
 bun add @markitjs/react
 # pnpm
 pnpm add @markitjs/react
+# yarn (install @markitjs/core explicitly)
+yarn add @markitjs/react @markitjs/core
 ```
+
+With Yarn, install peer dependency `@markitjs/core` explicitly (see commands above).
 
 ```tsx
 'use client';
@@ -79,7 +83,11 @@ npm install @markitjs/angular
 bun add @markitjs/angular
 # pnpm
 pnpm add @markitjs/angular
+# yarn (install @markitjs/core explicitly)
+yarn add @markitjs/angular @markitjs/core
 ```
+
+With Yarn, install peer dependency `@markitjs/core` explicitly (see commands above).
 
 ```typescript
 import { MarkitHighlightDirective } from '@markitjs/angular';

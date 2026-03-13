@@ -18,9 +18,13 @@ bun add @markitjs/angular
 pnpm add @markitjs/angular
 ```
 
+```bash [yarn]
+yarn add @markitjs/angular @markitjs/core
+```
+
 :::
 
-**Peer dependency:** `@markitjs/core` is required; npm 7+, pnpm, and Yarn install it automatically when you add `@markitjs/angular`.
+**Peer dependencies:** `@markitjs/core` (and Angular) are required. npm 7+, pnpm, and bun install them automatically. **With Yarn**, install `@markitjs/core` explicitly: `yarn add @markitjs/angular @markitjs/core`.
 
 ## Directive Usage
 

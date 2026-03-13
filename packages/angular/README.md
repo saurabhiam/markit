@@ -10,9 +10,11 @@ npm install @markitjs/angular
 bun add @markitjs/angular
 # or
 pnpm add @markitjs/angular
+# or (Yarn — include @markitjs/core explicitly)
+yarn add @markitjs/angular @markitjs/core
 ```
 
-**Peer dependencies:** Angular 17, 18, or 19, and `@markitjs/core` (installed automatically by npm 7+, pnpm, and Yarn).
+**Peer dependencies:** Angular 17, 18, or 19, and `@markitjs/core` (installed automatically by npm 7+, pnpm, and bun; with Yarn, add `@markitjs/core` explicitly: `yarn add @markitjs/angular @markitjs/core`).
 
 ## Quick Start
 

@@ -18,6 +18,10 @@ bun add @markitjs/core
 pnpm add @markitjs/core
 ```
 
+```bash [yarn]
+yarn add @markitjs/core
+```
+
 :::
 
 For framework-specific wrappers:
@@ -38,6 +42,10 @@ bun add @markitjs/react
 pnpm add @markitjs/react
 ```
 
+```bash [yarn]
+yarn add @markitjs/react @markitjs/core
+```
+
 :::
 
 **Angular**
@@ -56,7 +64,13 @@ bun add @markitjs/angular
 pnpm add @markitjs/angular
 ```
 
+```bash [yarn]
+yarn add @markitjs/angular @markitjs/core
+```
+
 :::
+
+If you use Yarn, add `@markitjs/core` explicitly when installing the React or Angular package (as in the Yarn commands above).
 
 ## Quick Start (Vanilla JS)
 
