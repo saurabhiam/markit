@@ -6,7 +6,7 @@ export default withMermaid(
     title: 'MarkIt',
     description: 'High-performance text highlighting for the modern web',
     base: '/',
-
+    cleanUrls: true,
     head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]],
 
     themeConfig: {
