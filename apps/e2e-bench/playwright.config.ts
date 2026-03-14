@@ -6,9 +6,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   testDir: './tests',
-  fullyParallel: false,
+  fullyParallel: true,
   retries: 0,
-  workers: 1,
+  workers: 6,
+  timeout: 60000,
   reporter: [['list'], ['json', { outputFile: 'results/benchmark-results.json' }]],
   use: {
     baseURL: 'http://localhost:3456',

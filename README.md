@@ -192,7 +192,7 @@ bun run test
 
 **Real-browser performance benchmarks** (Playwright + Chromium):
 
-- **Smoke tests** (1K nodes, used in CI): `bun run e2e`
+- **Smoke tests** (1K nodes, used in CI): `bun run e2e` — runs for all three renderers (highlight-api, dom, overlay)
 - **Full suite** (1K–100K nodes): `bun run bench`
 
 ```bash
