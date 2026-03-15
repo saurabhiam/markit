@@ -1,5 +1,25 @@
-import { defineConfig } from 'vitepress';
+import { defineConfig, type HeadConfig } from 'vitepress';
 import { withMermaid } from 'vitepress-plugin-mermaid';
+
+const gaId = 'G-K3FGQDW4KE';
+const bingVerification = '790FB429A6A3AFCAE9DF8EBD8CFD7A79';
+
+const head: HeadConfig[] = [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]];
+
+if (gaId) {
+  head.push(
+    ['script', { src: `https://www.googletagmanager.com/gtag/js?id=${gaId}`, async: 'true' }, ''],
+    [
+      'script',
+      {},
+      `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${gaId}');`,
+    ],
+  );
+}
+
+if (bingVerification) {
+  head.push(['meta', { name: 'msvalidate.01', content: bingVerification }]);
+}
 
 export default withMermaid(
   defineConfig({
@@ -7,7 +27,7 @@ export default withMermaid(
     description: 'High-performance text highlighting for the modern web',
     base: '/',
     cleanUrls: true,
-    head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]],
+    head,
 
     themeConfig: {
       search: {
