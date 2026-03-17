@@ -132,7 +132,7 @@ All highlighting runs **outside NgZone** via `NgZone.runOutsideAngular()`. This 
 
 ### No innerHTML
 
-MarkIt never uses `innerHTML`. The DOM renderer splits text nodes using the Range API and wraps matches with `Range.surroundContents()`. This preserves:
+MarkIt never uses `innerHTML`. The DOM renderer splits text nodes and wraps matches in `<mark>` (or a configured element), **keeping the original text node in place** so Angular’s bindings continue to update the same node—including when the match is at the start of the text. This preserves:
 
 - Angular's internal `LView` references
 - Template bindings (`[value]`, `(click)`, `*ngIf`)

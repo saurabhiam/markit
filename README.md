@@ -6,7 +6,7 @@ High-performance text highlighting for the modern web. A production-grade altern
 
 - **Fast** — Designed to rival Chrome's native Find in Page. Uses `TreeWalker` for O(n) traversal, binary search for match resolution, and zero-layout-cost rendering via the CSS Custom Highlight API.
 - **Framework-safe** — Never uses `innerHTML`. Preserves Angular bindings, React reconciliation, event listeners, and component trees.
-- **Three rendering engines** — CSS Highlight API (zero DOM mutations), DOM wrapping (Range API + text node splitting), and overlay positioning. Auto-detects the best engine for your browser.
+- **Three rendering engines** — CSS Highlight API (zero DOM mutations), DOM wrapping (text node splitting, preserves original node for bindings), and overlay positioning. Auto-detects the best engine for your browser.
 - **Batched rendering** — For very large DOMs (50K+ nodes), split rendering across animation frames with `batchSize` to keep the UI responsive.
 - **Full-featured** — Regex, multiple keywords, case sensitivity, diacritics, synonyms, wildcards, accuracy modes, exclude selectors, across-elements matching, and more.
 - **Tiny & tree-shakeable** — ESM and CJS builds with `sideEffects: false`.

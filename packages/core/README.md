@@ -44,7 +44,7 @@ The library ships with three rendering strategies, selectable via the `renderer`
 | Overlay        | `'overlay'`       | Minimal       | All browsers                                       |
 | Auto (default) | `'auto'`          | Varies        | Feature-detected                                   |
 
-`auto` prefers the CSS Custom Highlight API when available, falling back to DOM wrapping.
+`auto` prefers the CSS Custom Highlight API when available, falling back to DOM wrapping. The DOM renderer never removes the original text node—only updates its `textContent` and inserts wrappers—so framework bindings (Angular, React, etc.) keep updating correctly, including when the match is at the start of the text.
 
 ## Multiple instances
 
