@@ -76,11 +76,7 @@ export class DomRenderer implements RendererInterface {
       if (!parent) continue;
 
       // wrapTextRange creates a single text node, which we unwrap here.
-      const matchTextNode = wrapper.firstChild;
-      if (!matchTextNode) {
-        parent.removeChild(wrapper);
-        continue;
-      }
+      const matchTextNode = wrapper.firstChild!;
       parent.insertBefore(matchTextNode, wrapper);
 
       let merged = false;
