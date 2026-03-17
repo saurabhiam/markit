@@ -69,20 +69,22 @@ export class DomRenderer implements RendererInterface {
   }
 
   clear(): void {
-    // Unwrap all wrapper elements: move children out, remove wrapper.
     const parentsThatNeedNormalize = new Set<Node>();
 
     for (const wrapper of this.wrapperElements) {
       const parent = wrapper.parentNode;
       if (!parent) continue;
 
-      while (wrapper.firstChild) {
-        parent.insertBefore(wrapper.firstChild, wrapper);
+      // wrapTextRange creates a single text node, which we unwrap here.
+      const matchTextNode = wrapper.firstChild;
+      if (!matchTextNode) {
+        parent.removeChild(wrapper);
+        continue;
       }
+      parent.insertBefore(matchTextNode, wrapper);
 
       let merged = false;
       if (wrapper.hasAttribute(MERGE_NEXT_ATTR)) {
-        const matchTextNode = wrapper.previousSibling;
         const preservedNode = wrapper.nextSibling;
         if (
           matchTextNode?.nodeType === Node.TEXT_NODE &&
