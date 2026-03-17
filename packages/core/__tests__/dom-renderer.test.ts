@@ -92,6 +92,25 @@ describe('DomRenderer', () => {
     expect(container.querySelector('p')!.childNodes).toHaveLength(1);
   });
 
+  it('start-of-node match: keeps original text node in DOM and clear() merges back', () => {
+    const resolved = highlightAndResolve('<p>Hello world</p>', 'Hello');
+    renderer.render(resolved, { element: 'mark', className: 'markit-match' } as MarkitOptions);
+
+    const p = container.querySelector('p')!;
+    const mark = p.querySelector('mark')!;
+    expect(mark.textContent).toBe('Hello');
+    // Wrapper is before the preserved text node (remainder " world")
+    expect(mark.nextSibling?.nodeType).toBe(Node.TEXT_NODE);
+    expect((mark.nextSibling as Text).textContent).toBe(' world');
+    expect(p.textContent).toBe('Hello world');
+
+    renderer.clear();
+
+    expect(p.querySelectorAll('mark')).toHaveLength(0);
+    expect(p.textContent).toBe('Hello world');
+    expect(p.childNodes).toHaveLength(1);
+  });
+
   it('does not use innerHTML', () => {
     const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
 
