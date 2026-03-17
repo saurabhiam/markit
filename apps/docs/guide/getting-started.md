@@ -102,7 +102,7 @@ MarkIt uses a **dual-engine architecture**:
 
 1. **CSS Custom Highlight API** (default) — Creates `Range` objects and registers them with the browser's highlight registry. Styled via `::highlight()`. Zero DOM mutations. Supported in Chrome 105+, Edge 105+, Safari 17.2+, Firefox 140+; unsupported browsers fall back to the DOM renderer with `renderer: 'auto'`.
 
-2. **DOM Range Renderer** (fallback) — Splits text nodes and wraps matches in `<mark>` elements using the Range API. Never uses `innerHTML`.
+2. **DOM renderer** (fallback) — Splits text nodes and wraps matches in `<mark>` elements, keeping the original text node in place so framework bindings (e.g. Angular, React) keep updating. Never uses `innerHTML`.
 
 The engine is selected automatically via feature detection, or you can force one:
 
