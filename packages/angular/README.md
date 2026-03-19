@@ -136,7 +136,7 @@ highlightOptions = {
 
 ## Preserving Bindings
 
-Unlike `innerHTML`-based approaches, MarkIt never replaces DOM nodes. The CSS Highlight API (default) creates **zero DOM mutations**. The DOM wrapping renderer splits text nodes and wraps matches while **keeping the original text node in place**, so framework bindings (e.g. `{{ value }}`) continue to update correctly and it never destroys component instances, event listeners, or form control state.
+Unlike `innerHTML`-based approaches, MarkIt never replaces DOM nodes. The CSS Highlight API (default) creates **zero DOM mutations**. The DOM wrapping renderer splits text nodes and wraps matches while **keeping the original text node in place**—including when the match is at the start of the text—so framework bindings (e.g. `{{ value }}`) continue to update correctly and it never destroys component instances, event listeners, or form control state.
 
 ## Batched Rendering
 

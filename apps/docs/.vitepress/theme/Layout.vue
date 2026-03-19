@@ -19,9 +19,7 @@ import DefaultTheme from 'vitepress/theme';
             >.
             <br />
             <span class="footer-india">
-              <a href="https://madewithloveinindia.org" target="_blank" rel="noopener"
-                >Made with <span aria-label="Love" class="footer-heart">&hearts;</span> in India</a
-              >
+              Made with <span aria-label="Love" class="footer-heart">&hearts;</span> in India
             </span>
           </p>
         </div>
@@ -62,14 +60,7 @@ import DefaultTheme from 'vitepress/theme';
 
 .footer-india {
   margin-left: 0.5rem;
-}
-
-.footer-india a {
-  color: var(--vp-c-text-2) !important;
-}
-
-.footer-india a:hover {
-  color: var(--vp-c-text-1) !important;
+  color: var(--vp-c-text-2);
 }
 
 .footer-heart {

@@ -94,6 +94,8 @@ instance.destroy();
 | `ignoreJoiners`      | `boolean`                                                     | `false`              | Ignore zero-width characters                                   |
 | `ignorePunctuation`  | `string[]`                                                    | —                    | Punctuation characters to ignore                               |
 | `exclude`            | `string[]`                                                    | —                    | CSS selectors to exclude from search                           |
+| `iframes`            | `boolean`                                                     | `false`              | Enable iframe traversal (same-origin only)                     |
+| `iframesTimeout`     | `number`                                                      | `5000`               | Timeout in ms for iframe loading                               |
 | `debounce`           | `number`                                                      | `0`                  | Debounce delay in ms for live search                           |
 | `batchSize`          | `number`                                                      | `0`                  | Render matches in async batches of this size (0 = synchronous) |
 | `debug`              | `boolean`                                                     | `false`              | Log timing info to console                                     |
@@ -108,6 +110,10 @@ With the `highlight-api` or `auto` renderer, multiple MarkIt instances share one
 
 ::: info Browser support for Highlight API
 The `highlight-api` (and `auto`) renderer uses the CSS Custom Highlight API. It is supported in **Chrome 105+**, **Edge 105+**, **Safari 17.2+**, and **Firefox 140+**. In older or unsupported environments, use `renderer: 'dom'` or rely on `auto` to fall back to DOM wrapping.
+:::
+
+::: info DOM renderer and framework bindings
+The DOM renderer never removes the framework-owned text node. For matches in the middle or end of a node, it only updates that node's `textContent` to the "before" part and inserts the wrapper and "after" text. For matches at the **start** of a node, it inserts the wrapper before the node and keeps the node in place with only the "after" text. On `unmark()`/`clear()`, it merges wrapped text back into that same node. So Angular, React, and other frameworks keep updating the same DOM node and dynamic content (e.g. with `markitContentKey` or `contentKey`) stays correct.
 :::
 
 ## Callbacks
