@@ -1,5 +1,20 @@
 # @markitjs/angular
 
+## 1.0.4
+
+### Patch Changes
+
+- ## What's Changed
+  - chore: update documentation for Yarn peer dependency installation by @saurabhiam in https://github.com/saurabhiam/markit/pull/33
+  - Pages readiness for new domain by @saurabhiam in https://github.com/saurabhiam/markit/pull/34
+  - Enhance DomRenderer to merge text nodes on clear() and update docs by @saurabhiam in https://github.com/saurabhiam/markit/pull/35
+  - refactor: improve clear() method in DomRenderer to handle text node unwrapping by @saurabhiam in https://github.com/saurabhiam/markit/pull/36
+
+  **Full Changelog**: https://github.com/saurabhiam/markit/compare/release-2026-03-12-02...release-2026-03-22-01
+
+- Updated dependencies []:
+  - @markitjs/core@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes
